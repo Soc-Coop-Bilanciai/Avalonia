@@ -17,25 +17,36 @@ namespace Avalonia.Skia
         private readonly object _lock = new();
         private PathCache _pathCache;
         internal static readonly bool StrokeCacheEnabled = Environment.GetEnvironmentVariable("AVALONIA_STROKE_CACHE") == "1";
-        private readonly Dictionary<(double, PenLineCap, PenLineJoin, double), SKPath> _strokeFills = new();
+        private Dictionary<(double, PenLineCap, PenLineJoin, double), SKPath>? _strokeFills;
 
-        public SKPath? GetCachedStrokeFill(IPen pen)
+        public bool TryDrawCachedStroke(SKCanvas canvas, IPen pen, SKPaint paint)
         {
-            // shortcut: callers must serialize path use with mutation/eviction; introduce a lease before qualifying concurrent mutable geometry.
-            if (pen.Thickness <= 0 || pen.DashStyle != null || StrokePath == null) return null;
             lock (_lock)
             {
-                var key = (pen.Thickness, pen.LineCap, pen.LineJoin, pen.MiterLimit);
-                if (_strokeFills.TryGetValue(key, out var cached)) return cached;
-                if (_strokeFills.Count >= 4) ClearStrokeFills();
-                var path = SKPathHelper.CreateStrokedPath(StrokePath, pen);
-                if (path != null) _strokeFills[key] = path;
-                return path;
+                if (GetCachedStrokeFill(pen) is not { } outline)
+                    return false;
+                // Keep the native path alive until Skia has consumed or recorded it.
+                paint.IsStroke = false;
+                canvas.DrawPath(outline, paint);
+                return true;
             }
+        }
+
+        private SKPath? GetCachedStrokeFill(IPen pen)
+        {
+            if (pen.Thickness <= 0 || pen.DashStyle != null || StrokePath == null) return null;
+            _strokeFills ??= new();
+            var key = (pen.Thickness, pen.LineCap, pen.LineJoin, pen.MiterLimit);
+            if (_strokeFills.TryGetValue(key, out var cached)) return cached;
+            if (_strokeFills.Count >= 4) ClearStrokeFills();
+            var path = SKPathHelper.CreateStrokedPath(StrokePath, pen);
+            if (path != null) _strokeFills[key] = path;
+            return path;
         }
 
         private void ClearStrokeFills()
         {
+            if (_strokeFills == null) return;
             foreach (var path in _strokeFills.Values) path.Dispose();
             _strokeFills.Clear();
         }

@@ -16,6 +16,9 @@ internal static class BilanciaiSoftwareProfile
     /// </summary>
     public static void Configure()
     {
+        if (!OperatingSystem.IsLinux() || RuntimeInformation.ProcessArchitecture != Architecture.Arm64)
+            return;
+
         SetDefault("AVALONIA_MASK_SHADOWS", "1");
         SetDefault("AVALONIA_STROKE_CACHE", "1");
         SetDefault("AVALONIA_RASTER_WORKERS", "3");

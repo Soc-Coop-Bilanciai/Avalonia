@@ -1,5 +1,7 @@
 using System;
 using Avalonia.Media;
+using Avalonia.Rendering;
+using SkiaSharp;
 
 namespace Avalonia.Skia;
 
@@ -18,29 +20,36 @@ internal static class RendererSelfTest
         }
         SetLine(geometry, 10);
         var pen = new Pen(Brushes.Red, 2);
-        var first = geometry.GetCachedStrokeFill(pen);
-        if (first == null || !ReferenceEquals(first, geometry.GetCachedStrokeFill(pen)))
-            throw new Exception("Stroke cache reuse failed.");
-        if (ReferenceEquals(first, geometry.GetCachedStrokeFill(new Pen(Brushes.Blue, 3))))
-            throw new Exception("Stroke widths must have separate cache entries.");
+        using var bitmap = new SKBitmap(64, 32);
+        using var canvas = new SKCanvas(bitmap);
+        using var paint = new SKPaint { Color = SKColors.Red };
+        for (var i = 0; i < 2; i++)
+            if (!geometry.TryDrawCachedStroke(canvas, pen, paint))
+                throw new Exception("Stroke cache drawing failed.");
         SetLine(geometry, 30);
-        var updated = geometry.GetCachedStrokeFill(pen);
-        if (updated == null || ReferenceEquals(first, updated) || updated.TightBounds.Right < 30)
+        bitmap.Erase(SKColors.Transparent);
+        if (!geometry.TryDrawCachedStroke(canvas, pen, paint) || bitmap.GetPixel(25, 0).Alpha == 0)
             throw new Exception("Geometry mutation did not invalidate the stroke cache.");
-        if (geometry.GetCachedStrokeFill(new Pen(Brushes.Red, 0)) != null)
-            throw new Exception("Hairlines must retain the original drawing path.");
-        for (var width = 1; width < 20; width++)
-            if (geometry.GetCachedStrokeFill(new Pen(Brushes.Red, width)) == null)
-                throw new Exception("Bounded cache eviction failed.");
-        Console.WriteLine("RENDERER SELF-TEST PASS: reuse, pen changes, geometry invalidation, hairline fallback, bounded eviction.");
+        if (geometry.TryDrawCachedStroke(canvas, new Pen(Brushes.Red, 0), paint)
+            || geometry.TryDrawCachedStroke(canvas, new Pen(Brushes.Red, 2, new DashStyle(new[] { 1d, 1d }, 0)), paint))
+            throw new Exception("Hairlines and dashed strokes must retain the original drawing path.");
+        System.Threading.Tasks.Parallel.Invoke(
+            () => { for (var i = 0; i < 2000; i++) geometry.TryDrawCachedStroke(canvas, pen, paint); },
+            () => { for (var i = 0; i < 2000; i++) geometry.GetRenderBounds(new Pen(Brushes.Blue, i % 10 + 1)); });
+        Console.WriteLine("RENDERER SELF-TEST PASS: drawing, invalidation, fallback, concurrent cache eviction.");
+        var timer = new SleepLoopRenderTimer(60) { FrameRateLimit = 24 };
+        timer.DesiredFps = 120;
+        if (timer.DesiredFps != 24) throw new Exception("Display change lost the frame-rate limit.");
+        timer.DesiredFps = 12;
+        if (timer.DesiredFps != 12) throw new Exception("Frame-rate limit raised the platform rate.");
+        Console.WriteLine("TIMER SELF-TEST PASS: display-rate changes preserve the cap.");
         VerifyTiles();
     }
 
     private static void VerifyProfile()
     {
-        if (!OperatingSystem.IsLinux() || System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture
-            != System.Runtime.InteropServices.Architecture.Arm64)
-            return;
+        var qualified = OperatingSystem.IsLinux() && System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture
+            == System.Runtime.InteropServices.Architecture.Arm64;
         var names = new[] { "AVALONIA_MASK_SHADOWS", "AVALONIA_STROKE_CACHE", "AVALONIA_RASTER_WORKERS",
             "AVALONIA_RASTER_TILES", "AVALONIA_RASTER_AXIS", "AVALONIA_RENDER_FPS" };
         var expected = new[] { "1", "1", "3", "4", "horizontal", "24" };
@@ -50,7 +59,7 @@ internal static class RendererSelfTest
             foreach (var name in names) Environment.SetEnvironmentVariable(name, null);
             BilanciaiSoftwareProfile.Configure();
             for (var i = 0; i < names.Length; i++)
-                if (Environment.GetEnvironmentVariable(names[i]) != expected[i])
+                if (Environment.GetEnvironmentVariable(names[i]) != (qualified ? expected[i] : null))
                     throw new Exception($"Profile default differs: {names[i]}.");
             Environment.SetEnvironmentVariable("AVALONIA_RASTER_WORKERS", "2");
             BilanciaiSoftwareProfile.Configure();

@@ -13,6 +13,7 @@ The release manifest records both IDs and exact hashes.
 | BIL-AVA-004 | Optional renderer profiling and drawing scopes | BIL-AVA-003 for raster metrics | Carried from NextFramework | Not submitted |
 | BIL-AVA-005 | Internal software profile initialization in SkiaPlatform; existing renderer self-checks | BIL-AVA-001 through 004 | Carried from NextFramework | Not submitted |
 | BIL-AVA-006 | Desktop packaging, provenance, immutable publication and port scripts | None | Distribution infrastructure | Downstream only |
+| BIL-AVA-007 | Restrict automatic defaults to Linux ARM64; serial fallback and framebuffer cleanup; protect cached stroke use; preserve the timer cap across display changes | BIL-AVA-001, 003, 005 | Pending release 12.1.4.2 | Downstream only |
 
 The public Avalonia API and assembly identities remain upstream-compatible. Do not add
 application calls into downstream-only APIs. Configuration remains internal/environment-based.
@@ -27,10 +28,21 @@ Compare public/reference assemblies, build both NextFramework profiles and quali
 actual target before release. Check stroke/shadow fallbacks, framebuffer ownership and
 worker completion before unlock, disposal/resizing and rendering-clock initialization.
 
-The existing limitations remain: native X11 framebuffer assumptions, eight-pixel tile
-padding, concurrent geometry mutation/lifetime, private render-clock hooks, and incomplete
-multi-window/DPI/custom-Skia-lease qualification. Existing measurement evidence remains in
+The remaining limitations are eight-pixel tile padding, arbitrary concurrent geometry
+mutation, and incomplete multi-window/DPI/custom-Skia-lease qualification. BIL-AVA-007
+protects cached path use and eviction together; it does not make upstream mutable
+geometry generally thread-safe. Unsupported framebuffer formats/retention use serial
+drawing, and incompatible timers keep their own clock. Automatic defaults are selected
+before platform initialization; the internal sleep-loop cap is applied only when a
+software framebuffer target is created. Existing measurement evidence remains in
 NextFramework under `src/Bilanciai.Framework.Rendering.Software/Docs`.
+
+The pending fixes were checked with the existing renderer self-test and small local
+NexT assertions (including framebuffer release after failure). ARM64 comparisons use
+the actual NexT animation view; see NextFramework's
+`src/Bilanciai.Application.NexT/Docs/PERFORMANCE_TESTING.md`. The published
+`12.1.4.1` packages remain unchanged. Revision 2 must be packed and released from
+committed sources before applications can select it through NuGet.
 
 ## Locating a patch
 

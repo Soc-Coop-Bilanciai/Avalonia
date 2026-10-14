@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Reactive;
+using Avalonia.Rendering;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
 using SkiaSharp;
@@ -30,21 +31,18 @@ namespace Avalonia.Skia
         public FramebufferRenderTarget(IFramebufferPlatformSurface platformSurface, bool useScaledDrawing = false)
         {
             _useScaledDrawing = useScaledDrawing;
-            _renderTarget = platformSurface.CreateFramebufferRenderTarget();
             var fpsSetting = Environment.GetEnvironmentVariable("AVALONIA_RENDER_FPS");
             if (fpsSetting != null)
             {
                 if (!int.TryParse(fpsSetting, out var fps) || fps < 1 || fps > 120)
                     throw new ArgumentException("AVALONIA_RENDER_FPS must be 1..120.");
-                var loop = AvaloniaLocator.Current.GetRequiredService<Avalonia.Rendering.IRenderLoop>();
-                var timer = loop.GetType().GetProperty("Timer", System.Reflection.BindingFlags.Instance
-                    | System.Reflection.BindingFlags.NonPublic)?.GetValue(loop);
-                if (timer is not Avalonia.Rendering.SleepLoopRenderTimer sleepLoop)
-                    throw new InvalidOperationException("The benchmark clock override requires the Avalonia 12.1.4 X11 sleep loop.");
-                // shortcut: a screen refresh-rate change resets this private timer; qualify a public hook before production use.
-                sleepLoop.DesiredFps = fps;
-                Console.WriteLine($"RASTER CLOCK fps={fps}");
+                if ((AvaloniaLocator.Current.GetService<IRenderLoop>() as DefaultRenderLoop)?.Timer is SleepLoopRenderTimer timer)
+                {
+                    timer.FrameRateLimit = fps;
+                    Console.WriteLine($"RASTER CLOCK fps={timer.DesiredFps}");
+                }
             }
+            _renderTarget = platformSurface.CreateFramebufferRenderTarget();
         }
 
         /// <inheritdoc />
@@ -75,52 +73,61 @@ namespace Avalonia.Skia
             
             var framebuffer = _renderTarget.Lock(sceneInfo, out var lockProperties);
             
-            var framebufferImageInfo = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
-                framebuffer.Format.ToSkColorType(),
-                framebuffer.AlphaFormat.ToSkAlphaType());
-
-            CreateSurface(framebufferImageInfo, framebuffer);
-            _hadConversionShim |= _conversionShim != null;
-
-            var canvas = _framebufferSurface.Canvas;
-
-            canvas.RestoreToCount(-1);
-            canvas.Save();
-            canvas.ResetMatrix();
-
-            var createInfo = new DrawingContextImpl.CreateInfo
+            SKPictureRecorder? recorder = null;
+            try
             {
-                Surface = _framebufferSurface,
-                Dpi = framebuffer.Dpi,
-                ScaleDrawingToDpi = _useScaledDrawing
-            };
+                var framebufferImageInfo = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
+                    framebuffer.Format.ToSkColorType(),
+                    framebuffer.AlphaFormat.ToSkAlphaType());
 
-            properties = new()
-            {
-                PreviousFrameIsRetained = _parallel == null && !_hadConversionShim && lockProperties.PreviousFrameIsRetained
-            };
-            
-            if (_parallel != null)
-            {
-                if (_conversionShim != null || !_renderTarget.RetainsFrameContents)
-                    throw new InvalidOperationException("Parallel prototype requires a retained native-format framebuffer.");
-                var recorder = new SKPictureRecorder();
-                createInfo.Canvas = recorder.BeginRecording(new SKRect(0, 0, framebuffer.Size.Width, framebuffer.Size.Height), true);
-                return new DrawingContextImpl(createInfo, Disposable.Create(() =>
+                CreateSurface(framebufferImageInfo, framebuffer);
+                _hadConversionShim |= _conversionShim != null;
+
+                var canvas = _framebufferSurface.Canvas;
+
+                canvas.RestoreToCount(-1);
+                canvas.Save();
+                canvas.ResetMatrix();
+
+                var createInfo = new DrawingContextImpl.CreateInfo
                 {
-                    try
+                    Surface = _framebufferSurface,
+                    Dpi = framebuffer.Dpi,
+                    ScaleDrawingToDpi = _useScaledDrawing
+                };
+
+                var useParallel = _parallel != null && _conversionShim == null && _renderTarget.RetainsFrameContents;
+                properties = new()
+                {
+                    PreviousFrameIsRetained = !useParallel && !_hadConversionShim && lockProperties.PreviousFrameIsRetained
+                };
+
+                if (useParallel)
+                {
+                    recorder = new SKPictureRecorder();
+                    createInfo.Canvas = recorder.BeginRecording(new SKRect(0, 0, framebuffer.Size.Width, framebuffer.Size.Height), true);
+                    return new DrawingContextImpl(createInfo, Disposable.Create(() =>
                     {
-                        using var picture = recorder.EndRecording();
-                        _parallel.Render(picture, framebufferImageInfo, framebuffer.Address, framebuffer.RowBytes);
-                    }
-                    finally
-                    {
-                        recorder.Dispose();
-                        framebuffer.Dispose();
-                    }
-                }));
+                        try
+                        {
+                            using var picture = recorder.EndRecording();
+                            _parallel!.Render(picture, framebufferImageInfo, framebuffer.Address, framebuffer.RowBytes);
+                        }
+                        finally
+                        {
+                            recorder.Dispose();
+                            framebuffer.Dispose();
+                        }
+                    }));
+                }
+                return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
             }
-            return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
+            catch
+            {
+                recorder?.Dispose();
+                framebuffer.Dispose();
+                throw;
+            }
         }
         
 

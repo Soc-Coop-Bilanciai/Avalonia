@@ -53,8 +53,10 @@ dotnet build src/Application.NexT.sln -c Debug -p:AvaloniaDistribution=Bilanciai
   -p:AvaloniaForkFeed=C:/CB_SOURCES/Avalonia-Bilanciai/artifacts/nuget
 ```
 
-The two profiles have separate intermediate/output directories. Use matching profile and
-version properties for restore, build and publish. Building does not qualify rendering on hardware.
+Both profiles use NextFramework's standard project output and intermediate directories.
+Restore and build after switching profiles; do not skip these steps or build different
+profiles concurrently in the same checkout. Use matching profile and version properties
+for restore, build and publish. Building does not qualify rendering on hardware.
 
 ## Release to the private feed
 

@@ -14,6 +14,7 @@ namespace Avalonia.Rendering
         private readonly AutoResetEvent _wakeEvent = new(false);
         private readonly Stopwatch _st = Stopwatch.StartNew();
         private volatile int _desiredFps;
+        private volatile int _frameRateLimit;
 
         public SleepLoopRenderTimer(int fps)
         {
@@ -22,11 +23,21 @@ namespace Avalonia.Rendering
 
         public int DesiredFps
         {
-            get => _desiredFps;
+            get => _frameRateLimit > 0 ? Math.Min(_desiredFps, _frameRateLimit) : _desiredFps;
             set
             {
                 ArgumentOutOfRangeException.ThrowIfLessThan(value, 1);
                 _desiredFps = value;
+            }
+        }
+
+        internal int FrameRateLimit
+        {
+            get => _frameRateLimit;
+            set
+            {
+                ArgumentOutOfRangeException.ThrowIfLessThan(value, 1);
+                _frameRateLimit = value;
             }
         }
 
@@ -68,7 +79,7 @@ namespace Avalonia.Rendering
                     _wakeEvent.WaitOne();
 
                 var now = _st.Elapsed;
-                var tickInterval = TimeSpan.FromSeconds(1d / _desiredFps);
+                var tickInterval = TimeSpan.FromSeconds(1d / DesiredFps);
                 var timeTillNextTick = lastTick + tickInterval - now;
                 if (timeTillNextTick.TotalMilliseconds > 1)
                     _wakeEvent.WaitOne(timeTillNextTick);
