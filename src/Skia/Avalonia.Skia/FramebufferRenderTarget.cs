@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Reactive;
 using Avalonia.Platform;
@@ -13,6 +13,7 @@ namespace Avalonia.Skia
     internal class FramebufferRenderTarget : IRenderTarget
     {
         private readonly bool _useScaledDrawing;
+        private readonly ParallelRaster? _parallel = ParallelRaster.Create();
         private SKImageInfo _currentImageInfo;
         private IntPtr _currentFramebufferAddress;
         private SKSurface? _framebufferSurface;
@@ -30,6 +31,20 @@ namespace Avalonia.Skia
         {
             _useScaledDrawing = useScaledDrawing;
             _renderTarget = platformSurface.CreateFramebufferRenderTarget();
+            var fpsSetting = Environment.GetEnvironmentVariable("AVALONIA_RENDER_FPS");
+            if (fpsSetting != null)
+            {
+                if (!int.TryParse(fpsSetting, out var fps) || fps < 1 || fps > 120)
+                    throw new ArgumentException("AVALONIA_RENDER_FPS must be 1..120.");
+                var loop = AvaloniaLocator.Current.GetRequiredService<Avalonia.Rendering.IRenderLoop>();
+                var timer = loop.GetType().GetProperty("Timer", System.Reflection.BindingFlags.Instance
+                    | System.Reflection.BindingFlags.NonPublic)?.GetValue(loop);
+                if (timer is not Avalonia.Rendering.SleepLoopRenderTimer sleepLoop)
+                    throw new InvalidOperationException("The benchmark clock override requires the Avalonia 12.1.4 X11 sleep loop.");
+                // shortcut: a screen refresh-rate change resets this private timer; qualify a public hook before production use.
+                sleepLoop.DesiredFps = fps;
+                Console.WriteLine($"RASTER CLOCK fps={fps}");
+            }
         }
 
         /// <inheritdoc />
@@ -38,6 +53,7 @@ namespace Avalonia.Skia
             _renderTarget?.Dispose();
             _renderTarget = null;
             FreeSurface();
+            _parallel?.Dispose();
         }
 
         public RenderTargetProperties Properties => new()
@@ -81,9 +97,29 @@ namespace Avalonia.Skia
 
             properties = new()
             {
-                PreviousFrameIsRetained = !_hadConversionShim && lockProperties.PreviousFrameIsRetained
+                PreviousFrameIsRetained = _parallel == null && !_hadConversionShim && lockProperties.PreviousFrameIsRetained
             };
             
+            if (_parallel != null)
+            {
+                if (_conversionShim != null || !_renderTarget.RetainsFrameContents)
+                    throw new InvalidOperationException("Parallel prototype requires a retained native-format framebuffer.");
+                var recorder = new SKPictureRecorder();
+                createInfo.Canvas = recorder.BeginRecording(new SKRect(0, 0, framebuffer.Size.Width, framebuffer.Size.Height), true);
+                return new DrawingContextImpl(createInfo, Disposable.Create(() =>
+                {
+                    try
+                    {
+                        using var picture = recorder.EndRecording();
+                        _parallel.Render(picture, framebufferImageInfo, framebuffer.Address, framebuffer.RowBytes);
+                    }
+                    finally
+                    {
+                        recorder.Dispose();
+                        framebuffer.Dispose();
+                    }
+                }));
+            }
             return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
         }
         
