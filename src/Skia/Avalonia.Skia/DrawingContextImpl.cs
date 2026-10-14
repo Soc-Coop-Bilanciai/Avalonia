@@ -323,30 +323,45 @@ namespace Avalonia.Skia
             return 0.288675f * (float)radius + 0.5f;
         }
         
+        private static readonly bool EnableMaskShadows = Environment.GetEnvironmentVariable("AVALONIA_MASK_SHADOWS") == "1";
+
         private struct BoxShadowFilter : IDisposable
         {
             public readonly SKPaint Paint;
-            private readonly SKImageFilter? _filter;
+            private readonly IDisposable? _filter;
             public readonly SKClipOperation ClipOperation;
 
-            private BoxShadowFilter(SKPaint paint, SKImageFilter? filter, SKClipOperation clipOperation)
+            private BoxShadowFilter(SKPaint paint, IDisposable? filter, SKClipOperation clipOperation)
             {
                 Paint = paint;
                 _filter = filter;
                 ClipOperation = clipOperation;
             }
 
-            public static BoxShadowFilter Create(SKPaint paint, BoxShadow shadow, double opacity)
+            public static BoxShadowFilter Create(SKPaint paint, BoxShadow shadow, double opacity, bool allowMask)
             {
                 var ac = shadow.Color;
 
-                var filter = SKImageFilter.CreateBlur(SkBlurRadiusToSigma(shadow.Blur), SkBlurRadiusToSigma(shadow.Blur));
+                var sigma = SkBlurRadiusToSigma(shadow.Blur);
+                IDisposable? filter;
                 var color = new SKColor(ac.R, ac.G, ac.B, (byte)(ac.A * opacity));
 
                 paint.Reset();
                 paint.IsAntialias = true;
                 paint.Color = color;
-                paint.ImageFilter = filter;
+                // Solid outer shadows only need blurred coverage, rather than a four-channel image filter.
+                if (EnableMaskShadows && allowMask && !shadow.IsInset)
+                {
+                    var mask = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, sigma);
+                    paint.MaskFilter = mask;
+                    filter = mask;
+                }
+                else
+                {
+                    var image = SKImageFilter.CreateBlur(sigma, sigma);
+                    paint.ImageFilter = image;
+                    filter = image;
+                }
 
                 var clipOperation = shadow.IsInset ? SKClipOperation.Intersect : SKClipOperation.Difference;
 
@@ -445,7 +460,7 @@ namespace Avalonia.Skia
             {
                 if (boxShadow != default && !boxShadow.IsInset)
                 {
-                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
+                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity, _grContext == null))
                     {
                         var spread = (float)boxShadow.Spread;
                         if (boxShadow.IsInset)
@@ -502,7 +517,7 @@ namespace Avalonia.Skia
             {
                 if (boxShadow != default && boxShadow.IsInset)
                 {
-                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
+                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity, _grContext == null))
                     {
                         var spread = (float)boxShadow.Spread;
                         var offsetX = (float)boxShadow.OffsetX;
