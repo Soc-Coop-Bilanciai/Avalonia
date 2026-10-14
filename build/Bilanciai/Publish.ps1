@@ -1,6 +1,6 @@
 #requires -Version 7.0
 [CmdletBinding()]
-param([string]$Source)
+param([string]$Source, [string]$ConfigFile)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -9,6 +9,10 @@ $distribution = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'distribution.
 if ([string]::IsNullOrWhiteSpace($Source)) { $Source = $distribution.publishSource }
 if ([string]::IsNullOrWhiteSpace($Source)) { throw 'Configure publishSource or pass -Source with the NuGet upload endpoint.' }
 if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) { throw 'Set NUGET_API_KEY in the publishing environment.' }
+$configurationArguments = @()
+if (![string]::IsNullOrWhiteSpace($ConfigFile)) {
+    $configurationArguments = @('--configfile', (Resolve-Path -LiteralPath $ConfigFile).Path)
+}
 $packageRoot = Join-Path $root 'artifacts/nuget'
 $manifest = Get-Content -LiteralPath (Join-Path $packageRoot 'bilanciai-release.json') -Raw | ConvertFrom-Json
 if ([string]::IsNullOrWhiteSpace($manifest.repositoryUrl)) { throw 'Configure repositoryUrl and rebuild before publishing.' }
@@ -24,7 +28,7 @@ foreach ($entry in $manifest.packages) {
 if ($packages.Count -eq 0) { throw 'No packages in the release manifest.' }
 foreach ($package in $packages) {
     # A duplicate fails deliberately: a published version must never be silently replaced.
-    & dotnet nuget push $package --source $Source --api-key $env:NUGET_API_KEY --no-symbols
+    & dotnet nuget push $package --source $Source --api-key $env:NUGET_API_KEY --no-symbols @configurationArguments
     if ($LASTEXITCODE -ne 0) { throw "Publishing failed for $([IO.Path]::GetFileName($package)). Inspect the feed before retrying a partial upload." }
 }
 Write-Host "Published $($packages.Count) packages for Avalonia $($manifest.version). Archive bilanciai-release.json with this release."

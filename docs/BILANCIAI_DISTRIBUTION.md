@@ -64,6 +64,17 @@ from the environment. Configure credentials in the developer/CI environment, nev
 `dotnet nuget push` discovers the upload resource from the service index.
 If the server requires a separate upload URL, pass it with `Publish.ps1 -Source`.
 
+The gateway also requires HTTP Basic credentials for the `bagetter` source. Keep them in
+the user's NuGet configuration (encrypted on Windows), separate from the upload API key.
+The upstream repository's `NuGet.Config` clears inherited sources, so explicitly select
+the credential-bearing configuration when publishing from this checkout:
+
+```powershell
+pwsh ./build/Bilanciai/Publish.ps1 -Source bagetter -ConfigFile "$env:APPDATA/NuGet/NuGet.Config"
+```
+
+On other systems, pass the path to the appropriate user/CI NuGet configuration instead.
+
 1. Set `repositoryUrl`, review the patch register and commit the final release sources.
 2. Pack; compare public APIs against the matching official package and build both consumer profiles.
 3. Create and push the immutable release tag and branch to `origin`.
