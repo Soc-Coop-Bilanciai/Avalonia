@@ -17,6 +17,7 @@ namespace Avalonia.Skia
 
         public static void Initialize(SkiaOptions options)
         {
+            BilanciaiSoftwareProfile.Configure();
             var renderInterface = new PlatformRenderInterface(options.MaxGpuResourceSizeBytes, options.UseStencilBuffers);
 
             AvaloniaLocator.CurrentMutable
