@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -15,6 +16,29 @@ namespace Avalonia.Skia
     {
         private readonly object _lock = new();
         private PathCache _pathCache;
+        internal static readonly bool StrokeCacheEnabled = Environment.GetEnvironmentVariable("AVALONIA_STROKE_CACHE") == "1";
+        private readonly Dictionary<(double, PenLineCap, PenLineJoin, double), SKPath> _strokeFills = new();
+
+        public SKPath? GetCachedStrokeFill(IPen pen)
+        {
+            // shortcut: callers must serialize path use with mutation/eviction; introduce a lease before qualifying concurrent mutable geometry.
+            if (pen.Thickness <= 0 || pen.DashStyle != null || StrokePath == null) return null;
+            lock (_lock)
+            {
+                var key = (pen.Thickness, pen.LineCap, pen.LineJoin, pen.MiterLimit);
+                if (_strokeFills.TryGetValue(key, out var cached)) return cached;
+                if (_strokeFills.Count >= 4) ClearStrokeFills();
+                var path = SKPathHelper.CreateStrokedPath(StrokePath, pen);
+                if (path != null) _strokeFills[key] = path;
+                return path;
+            }
+        }
+
+        private void ClearStrokeFills()
+        {
+            foreach (var path in _strokeFills.Values) path.Dispose();
+            _strokeFills.Clear();
+        }
         private SKPathMeasure? _cachedPathMeasure;
 
         private SKPathMeasure CachedPathMeasure => _cachedPathMeasure ??= new SKPathMeasure(StrokePath!);
@@ -79,8 +103,14 @@ namespace Avalonia.Skia
         {
             lock (_lock)
             {
-                _pathCache.UpdateIfNeeded(StrokePath, pen);
-                var bounds = _pathCache.RenderBounds;
+                Rect bounds;
+                if (StrokeCacheEnabled && pen != null && GetCachedStrokeFill(pen) is { } outline)
+                    bounds = outline.TightBounds.ToAvaloniaRect();
+                else
+                {
+                    _pathCache.UpdateIfNeeded(StrokePath, pen);
+                    bounds = _pathCache.RenderBounds;
+                }
                 if (StrokePath != FillPath && FillPath != null)
                     bounds = bounds.Union(FillPath.TightBounds.ToAvaloniaRect());
                 return bounds;
@@ -168,6 +198,7 @@ namespace Avalonia.Skia
             {
                 _pathCache.Dispose();
                 _pathCache = default;
+                ClearStrokeFills();
             }
         }
 

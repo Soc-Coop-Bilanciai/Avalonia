@@ -303,7 +303,16 @@ namespace Avalonia.Skia
             {
                 using (stroke)
                 {
-                    Canvas.DrawPath(impl.StrokePath, stroke.Paint);
+                    var matrix = Canvas.TotalMatrix;
+                    if (GeometryImpl.StrokeCacheEnabled && _grContext == null && matrix.ScaleX == 1 && matrix.ScaleY == 1
+                        && matrix.SkewX == 0 && matrix.SkewY == 0 && matrix.Persp0 == 0 && matrix.Persp1 == 0
+                        && matrix.Persp2 == 1 && impl.GetCachedStrokeFill(pen) is { } outline)
+                    {
+                        stroke.Paint.IsStroke = false;
+                        Canvas.DrawPath(outline, stroke.Paint);
+                    }
+                    else
+                        Canvas.DrawPath(impl.StrokePath, stroke.Paint);
                 }
             }
         }
