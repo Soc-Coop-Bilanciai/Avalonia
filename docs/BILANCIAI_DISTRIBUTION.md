@@ -89,6 +89,11 @@ inspect the feed and complete only missing packages with their original bytes. N
 overwrite or rebuild the same version; a changed build needs a new revision.
 The scripts do not push branches, create release tags or publish implicitly during a build.
 
+Release `12.1.4.1` was published to the private feed on 2026-10-14. All 22 downloaded
+packages matched the SHA-256 hashes in the [archived release manifest](bilanciai-releases/12.1.4.1.json).
+The release tag still identifies the packaged sources; later publishing-script changes
+on the version branch do not change the published binaries or their provenance.
+
 Reusable Bilanciai framework libraries are built/packed against official Avalonia minimum
 dependencies. The application selects the exact compatible official or fork cohort.
 Independently released extensions such as DataGrid retain their own versions.
