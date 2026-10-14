@@ -18,6 +18,16 @@
   <Import Project="..\..\..\build\TrimmingEnable.props" />
   <Import Project="..\..\..\build\NullableEnable.props" />
 
+  <!-- The carried renderer uses reflection and is qualified only with untrimmed assemblies. -->
+  <PropertyGroup>
+    <IsAotCompatible>false</IsAotCompatible>
+    <IsTrimmable>false</IsTrimmable>
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="buildTransitive/Avalonia.Skia.targets" Pack="true" PackagePath="buildTransitive/Avalonia.Skia.targets" />
+  </ItemGroup>
+
   <ItemGroup Label="InternalsVisibleTo">
     <InternalsVisibleTo Include="Avalonia.Skia.RenderTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Skia.UnitTests, PublicKey=$(AvaloniaPublicKey)" />

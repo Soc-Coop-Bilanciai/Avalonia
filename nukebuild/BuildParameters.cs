@@ -12,6 +12,9 @@ using Nuke.Common.IO;
 
 public partial class Build
 {
+    [Parameter(Name = "bilanciai-desktop")]
+    public bool BilanciaiDesktop { get; set; }
+
     [Parameter(Name = "configuration")]
     public string? Configuration { get; set; }
 
@@ -84,7 +87,9 @@ public partial class Build
             MasterBranch = "refs/heads/master";
             ReleaseBranchRegex = new("^refs/heads/release/(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$");
             ReleaseConfiguration = "Release";
-            MSBuildSolution = RootDirectory / "dirs.proj";
+            MSBuildSolution = b.BilanciaiDesktop
+                ? RootDirectory / "build" / "Bilanciai" / "Desktop.proj"
+                : RootDirectory / "dirs.proj";
 
             // PARAMETERS
             IsLocalBuild = NukeBuild.IsLocalBuild;
@@ -119,7 +124,7 @@ public partial class Build
             
             if (IsRunningOnGitHubActions)
             {
-                if (!IsNuGetRelease)
+                if (!IsNuGetRelease && !b.BilanciaiDesktop)
                 {
                     // Use AssemblyVersion with Build as version
                     Version += "-cibuild" + GetCiBuildNumber().ToString("0000000") + "-alpha";

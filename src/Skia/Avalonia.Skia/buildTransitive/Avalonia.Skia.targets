@@ -1,0 +1,6 @@
+<Project>
+  <Target Name="ValidateBilanciaiRendererPublication" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(PublishAot)' == 'true' or '$(PublishTrimmed)' == 'true'"
+           Text="The Bilanciai Avalonia renderer requires untrimmed assemblies. Disable AOT and trimming or select official Avalonia." />
+  </Target>
+</Project>
