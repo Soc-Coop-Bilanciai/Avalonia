@@ -13,7 +13,7 @@ The release manifest records both IDs and exact hashes.
 | BIL-AVA-004 | Optional renderer profiling and drawing scopes | BIL-AVA-003 for raster metrics | Carried from NextFramework | Not submitted |
 | BIL-AVA-005 | Internal software profile initialization in SkiaPlatform; existing renderer self-checks | BIL-AVA-001 through 004 | Carried from NextFramework | Not submitted |
 | BIL-AVA-006 | Desktop packaging, provenance, immutable publication and port scripts | None | Distribution infrastructure | Downstream only |
-| BIL-AVA-007 | Restrict automatic defaults to Linux ARM64; serial fallback and framebuffer cleanup; protect cached stroke use; preserve the timer cap across display changes | BIL-AVA-001, 003, 005 | Pending release 12.1.4.2 | Downstream only |
+| BIL-AVA-007 | Restrict automatic defaults to Linux ARM64; serial fallback and framebuffer cleanup; protect cached stroke use; preserve the timer cap across display changes | BIL-AVA-001, 003, 005 | Packaged and tagged 12.1.4.2; NuGet upload pending | Downstream only |
 
 The public Avalonia API and assembly identities remain upstream-compatible. Do not add
 application calls into downstream-only APIs. Configuration remains internal/environment-based.
@@ -37,12 +37,14 @@ before platform initialization; the internal sleep-loop cap is applied only when
 software framebuffer target is created. Existing measurement evidence remains in
 NextFramework under `src/Bilanciai.Framework.Rendering.Software/Docs`.
 
-The pending fixes were checked with the existing renderer self-test and small local
+The revision-2 packages were checked with the existing renderer self-test and small local
 NexT assertions (including framebuffer release after failure). ARM64 comparisons use
 the actual NexT animation view; see NextFramework's
 `src/Bilanciai.Application.NexT/Docs/PERFORMANCE_TESTING.md`. The published
-`12.1.4.1` packages remain unchanged. Revision 2 must be packed and released from
-committed sources before applications can select it through NuGet.
+`12.1.4.1` packages remain unchanged. The immutable revision-2 tag and its
+[manifest](bilanciai-releases/12.1.4.2.json) identify the validated package bytes.
+NuGet upload is pending the publication credential; consumers must keep revision 1
+until revision 2 can be restored from the private feed.
 
 ## Locating a patch
 

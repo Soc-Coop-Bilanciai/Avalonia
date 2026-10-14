@@ -96,6 +96,13 @@ packages matched the SHA-256 hashes in the [archived release manifest](bilanciai
 The release tag still identifies the packaged sources; later publishing-script changes
 on the version branch do not change the published binaries or their provenance.
 
+Revision `12.1.4.2` was packed and tagged on 2026-10-14 at `f236ce70f`.
+The [revision-2 manifest](bilanciai-releases/12.1.4.2.json) records all 22 package hashes.
+Strict public API/assembly identity checks against official `12.1.4`, both NexT Release
+consumer builds and renderer/lifecycle checks passed using these packages. The branch
+and immutable tag are on `origin`. **NuGet upload is pending `NUGET_API_KEY`; this is
+not yet a feed release.** Keep the original package bytes when completing publication.
+
 Reusable Bilanciai framework libraries are built/packed against official Avalonia minimum
 dependencies. The application selects the exact compatible official or fork cohort.
 Independently released extensions such as DataGrid retain their own versions.
