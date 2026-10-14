@@ -241,6 +241,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawBitmap(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
+            using var profileScope = RasterProfiler.Measure("DrawBitmap");
             CheckLease();
             var drawableImage = (IDrawableBitmapImpl)source;
             var s = sourceRect.ToSKRect();
@@ -261,6 +262,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawBitmap(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
+            using var profileScope = RasterProfiler.Measure("DrawBitmap");
             CheckLease();
             PushOpacityMask(opacityMask, opacityMaskRect);
             DrawBitmap(source, 1, new Rect(0, 0, source.PixelSize.Width, source.PixelSize.Height), destRect);
@@ -270,6 +272,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawLine(IPen? pen, Point p1, Point p2)
         {
+            using var profileScope = RasterProfiler.Measure("DrawLine");
             CheckLease();
 
             if (pen is not null
@@ -285,6 +288,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry)
         {
+            using var profileScope = RasterProfiler.Measure("DrawGeometry");
             CheckLease();
             var impl = (GeometryImpl) geometry;
             var rect = geometry.Bounds;
@@ -398,6 +402,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawRectangle(IExperimentalAcrylicMaterial? material, RoundedRect rect)
         {
+            using var profileScope = RasterProfiler.Measure("DrawRectangle");
             if (rect.Rect.Height <= 0 || rect.Rect.Width <= 0)
                 return;
             CheckLease();
@@ -439,6 +444,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawRectangle(IBrush? brush, IPen? pen, RoundedRect rect, BoxShadows boxShadows = default)
         {
+            using var profileScope = RasterProfiler.Measure(boxShadows.Count > 0 ? "ShadowRectangle" : "PlainRectangle");
             if (rect.Rect.Height <= 0 || rect.Rect.Width <= 0)
                 return;
             CheckLease();
@@ -591,6 +597,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawEllipse(IBrush? brush, IPen? pen, Rect rect)
         {
+            using var profileScope = RasterProfiler.Measure("DrawEllipse");
             if (rect.Height <= 0 || rect.Width <= 0)
                 return;
             CheckLease();
@@ -618,6 +625,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawGlyphRun(IBrush? foreground, IGlyphRunImpl glyphRun)
         {
+            using var profileScope = RasterProfiler.Measure("DrawGlyphRun");
             CheckLease();
 
             if (foreground is null)
