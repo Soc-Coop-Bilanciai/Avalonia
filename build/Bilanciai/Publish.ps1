@@ -24,7 +24,7 @@ foreach ($entry in $manifest.packages) {
 if ($packages.Count -eq 0) { throw 'No packages in the release manifest.' }
 foreach ($package in $packages) {
     # A duplicate fails deliberately: a published version must never be silently replaced.
-    & dotnet nuget push $package --source $Source --api-key $env:NUGET_API_KEY
+    & dotnet nuget push $package --source $Source --api-key $env:NUGET_API_KEY --no-symbols
     if ($LASTEXITCODE -ne 0) { throw "Publishing failed for $([IO.Path]::GetFileName($package)). Inspect the feed before retrying a partial upload." }
 }
 Write-Host "Published $($packages.Count) packages for Avalonia $($manifest.version). Archive bilanciai-release.json with this release."

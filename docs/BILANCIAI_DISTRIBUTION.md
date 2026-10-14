@@ -72,6 +72,7 @@ If the server requires a separate upload URL, pass it with `Publish.ps1 -Source`
    private feed into an empty NuGet cache before declaring the release usable.
 
 Publication checks the release tag and every package hash before the first upload.
+Only the manifest's `.nupkg` files are uploaded; adjacent symbol packages are not published automatically.
 Duplicate versions fail. NuGet uploads are not transactional: after a partial upload,
 inspect the feed and complete only missing packages with their original bytes. Never
 overwrite or rebuild the same version; a changed build needs a new revision.
