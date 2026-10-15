@@ -108,6 +108,19 @@ Reusable Bilanciai framework libraries are built/packed against official Avaloni
 dependencies. The application selects the exact compatible official or fork cohort.
 Independently released extensions such as DataGrid retain their own versions.
 
+## Revision 12.1.4.3
+
+Revision 3 updates the central SkiaSharp, SkiaSharp.NativeAssets.Linux and
+SkiaSharp.NativeAssets.WebAssembly versions to `4.153.1` throughout the fork.
+All packages in the Bilanciai desktop distribution use version `12.1.4.3`.
+HarfBuzzSharp retains its existing independent version.
+
+This release is prepared without automated tests, renderer self-checks, consumer
+qualification or device tests, as explicitly requested. Packaging still requires
+compilation. Previous revision-2 checks do not qualify this dependency update, and
+this release makes no new performance claim. SkiaSharp v4 changes APIs and rendering
+behavior, including Linux font fallback; target-device qualification remains pending.
+
 ## Port to a new official tag
 
 ```powershell

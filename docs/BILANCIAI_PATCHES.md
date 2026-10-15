@@ -14,6 +14,7 @@ The release manifest records both IDs and exact hashes.
 | BIL-AVA-005 | Internal software profile initialization in SkiaPlatform; existing renderer self-checks | BIL-AVA-001 through 004 | Carried from NextFramework | Not submitted |
 | BIL-AVA-006 | Desktop packaging, provenance, immutable publication and port scripts | None | Distribution infrastructure | Downstream only |
 | BIL-AVA-007 | Restrict automatic defaults to Linux ARM64; serial fallback and framebuffer cleanup; protect cached stroke use; preserve the timer cap across display changes | BIL-AVA-001, 003, 005 | Released in 12.1.4.2 | Downstream only |
+| BIL-AVA-008 | Upgrade the fork-wide SkiaSharp and Linux/WebAssembly native assets to 4.153.1 | None | Release 12.1.4.3; no new runtime or performance qualification | Downstream only |
 
 The public Avalonia API and assembly identities remain upstream-compatible. Do not add
 application calls into downstream-only APIs. Configuration remains internal/environment-based.
