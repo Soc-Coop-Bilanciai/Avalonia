@@ -117,9 +117,16 @@ HarfBuzzSharp retains its existing independent version.
 Geometry construction uses `SKPathBuilder`, including separate stroke/fill builders
 for stream geometry, and publishes `SKPath` instances when the context is closed.
 
-This release is prepared without automated tests, renderer self-checks, consumer
-qualification or device tests, as explicitly requested. Packaging still requires
-compilation. Previous revision-2 checks do not qualify this dependency update, and
+All 22 packages were published to the private feed on 2026-10-15. The immutable
+`bilanciai/12.1.4.3` tag identifies source commit `cd08aaee9`; the
+[revision-3 manifest](bilanciai-releases/12.1.4.3.json) records the package hashes.
+Downloading every published package again confirmed all manifest SHA-256 hashes.
+Release compilation for .NET 8 and .NET 10 and the desktop packaging pipeline
+completed successfully. Symbol packages were retained locally and were not uploaded.
+
+No automated tests, renderer self-checks, consumer restore/build qualification or
+device tests were run, as explicitly requested. Previous revision-2 checks do not
+qualify this dependency update, and
 this release makes no new performance claim. SkiaSharp v4 changes APIs and rendering
 behavior, including Linux font fallback; target-device qualification remains pending.
 
