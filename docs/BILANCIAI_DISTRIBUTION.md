@@ -100,8 +100,9 @@ Revision `12.1.4.2` was packed and tagged on 2026-10-14 at `f236ce70f`.
 The [revision-2 manifest](bilanciai-releases/12.1.4.2.json) records all 22 package hashes.
 Strict public API/assembly identity checks against official `12.1.4`, both NexT Release
 consumer builds and renderer/lifecycle checks passed using these packages. The branch
-and immutable tag are on `origin`. **NuGet upload is pending `NUGET_API_KEY`; this is
-not yet a feed release.** Keep the original package bytes when completing publication.
+and immutable tag are on `origin`. All 22 packages were published to the private feed
+on 2026-10-15; downloading them again confirmed every manifest SHA-256. Symbol packages
+were not uploaded. The release tag and original package bytes remain unchanged.
 
 Reusable Bilanciai framework libraries are built/packed against official Avalonia minimum
 dependencies. The application selects the exact compatible official or fork cohort.
