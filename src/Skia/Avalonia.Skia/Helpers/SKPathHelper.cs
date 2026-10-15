@@ -17,7 +17,7 @@ internal static class SKPathHelper
         using var iter = path.CreateIterator(true);
         SKPathVerb verb;
         var points = new SKPoint[4];
-        var rv = new SKPath();
+        using var rv = new SKPathBuilder();
         while ((verb = iter.Next(points)) != SKPathVerb.Done)
         {
             if (verb == SKPathVerb.Move)
@@ -35,7 +35,7 @@ internal static class SKPathHelper
 
         }
 
-        return rv;
+        return rv.Detach();
     }
 
     /// <summary>
@@ -59,10 +59,10 @@ internal static class SKPathHelper
         if (DrawingContextHelper.TryCreateDashEffect(pen, out var dashEffect))
             paint.PathEffect = dashEffect;
 
-        var result = new SKPath();
+        using var result = new SKPathBuilder();
         paint.GetFillPath(path, result);
         paint.PathEffect?.Dispose();
         SKPaintCache.Shared.ReturnReset(paint);
-        return result;
+        return result.Detach();
     }
 }

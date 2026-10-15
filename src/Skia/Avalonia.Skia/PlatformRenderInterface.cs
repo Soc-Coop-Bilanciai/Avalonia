@@ -94,14 +94,14 @@ namespace Avalonia.Skia
 
             skFont.Hinting = SKFontHinting.None;
 
-            SKPath path = new SKPath();
+            using var path = new SKPathBuilder();
 
             var (currentX, currentY) = glyphRun.BaselineOrigin;
 
             for (var i = 0; i < glyphRun.GlyphInfos.Count; i++)
             {
                 var glyph = glyphRun.GlyphInfos[i].GlyphIndex;
-                var glyphPath = skFont.GetGlyphPath(glyph);
+                using var glyphPath = skFont.GetGlyphPath(glyph);
 
                 if (glyphPath is not null && !glyphPath.IsEmpty)
                 {
@@ -111,7 +111,8 @@ namespace Avalonia.Skia
                 currentX += glyphRun.GlyphInfos[i].GlyphAdvance;
             }
 
-            return new StreamGeometryImpl(path, path);
+            var geometryPath = path.Detach();
+            return new StreamGeometryImpl(geometryPath, geometryPath);
         }
 
         /// <inheritdoc />

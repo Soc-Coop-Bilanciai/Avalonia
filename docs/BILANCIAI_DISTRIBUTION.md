@@ -114,6 +114,8 @@ Revision 3 updates the central SkiaSharp, SkiaSharp.NativeAssets.Linux and
 SkiaSharp.NativeAssets.WebAssembly versions to `4.153.1` throughout the fork.
 All packages in the Bilanciai desktop distribution use version `12.1.4.3`.
 HarfBuzzSharp retains its existing independent version.
+Geometry construction uses `SKPathBuilder`, including separate stroke/fill builders
+for stream geometry, and publishes `SKPath` instances when the context is closed.
 
 This release is prepared without automated tests, renderer self-checks, consumer
 qualification or device tests, as explicitly requested. Packaging still requires

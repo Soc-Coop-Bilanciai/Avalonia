@@ -188,13 +188,13 @@ namespace Avalonia.Skia
 
             segmentGeometry = null;
 
-            var _skPathSegment = new SKPath();
+            using var _skPathSegment = new SKPathBuilder();
 
             var res = CachedPathMeasure.GetSegment((float)startDistance, (float)stopDistance, _skPathSegment, startOnBeginFigure);
 
             if (res)
             {
-                segmentGeometry = new StreamGeometryImpl(_skPathSegment, null);
+                segmentGeometry = new StreamGeometryImpl(_skPathSegment.Detach(), null);
             }
 
             return res;
@@ -210,6 +210,8 @@ namespace Avalonia.Skia
                 _pathCache.Dispose();
                 _pathCache = default;
                 ClearStrokeFills();
+                _cachedPathMeasure?.Dispose();
+                _cachedPathMeasure = null;
             }
         }
 

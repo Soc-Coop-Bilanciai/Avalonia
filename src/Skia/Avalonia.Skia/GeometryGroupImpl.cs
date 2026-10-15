@@ -15,7 +15,7 @@ namespace Avalonia.Skia
             var fillType = fillRule == FillRule.NonZero ? SKPathFillType.Winding : SKPathFillType.EvenOdd;
             var count = children.Count;
             
-            var stroke = new SKPath
+            using var stroke = new SKPathBuilder
             {
                 FillType = fillType
             };
@@ -32,11 +32,11 @@ namespace Avalonia.Skia
                 }
             }
             
-            StrokePath = stroke;
+            StrokePath = stroke.Detach();
             
             if (requiresFillPass)
             {
-                var fill = new SKPath
+                using var fill = new SKPathBuilder
                 {
                     FillType = fillType
                 };
@@ -47,12 +47,12 @@ namespace Avalonia.Skia
                         fill.AddPath(fillPath);
                 }
 
-                FillPath = fill;
+                FillPath = fill.Detach();
             }
             else
-                FillPath = stroke;
+                FillPath = StrokePath;
 
-            Bounds = stroke.TightBounds.ToAvaloniaRect();
+            Bounds = StrokePath.TightBounds.ToAvaloniaRect();
         }
 
         public override Rect Bounds { get; }

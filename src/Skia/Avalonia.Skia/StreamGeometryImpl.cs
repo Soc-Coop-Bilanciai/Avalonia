@@ -10,7 +10,7 @@ namespace Avalonia.Skia
     internal class StreamGeometryImpl : GeometryImpl, IStreamGeometryImpl
     {
         private Rect _bounds;
-        private readonly SKPath _strokePath;
+        private SKPath _strokePath;
         private SKPath? _fillPath;
 
         /// <summary>
@@ -79,17 +79,23 @@ namespace Avalonia.Skia
         private class StreamContext : IStreamGeometryContextImpl
         {
             private readonly StreamGeometryImpl _geometryImpl;
-            private SKPath Stroke => _geometryImpl._strokePath;
-            private SKPath Fill => _geometryImpl._fillPath ??= new();
+            private readonly SKPathBuilder _stroke;
+            private SKPathBuilder? _fill;
+            private SKPathBuilder Stroke => _stroke;
+            private SKPathBuilder Fill => _fill ??= new();
+            private bool _disposed;
             private bool _isFilled;
             private Point _startPoint;
             private bool _isFigureBroken;
-            private bool Duplicate => _isFilled && !ReferenceEquals(_geometryImpl._fillPath, Stroke);
+            private bool Duplicate => _isFilled && !ReferenceEquals(_fill, Stroke);
 
             private void EnsureSeparateFillPath()
             {
                 if (Stroke == Fill)
-                    _geometryImpl._fillPath = Stroke.Clone();
+                {
+                    using var path = Stroke.Snapshot();
+                    _fill = new SKPathBuilder(path);
+                }
             }
             
             private void BreakFigure()
@@ -109,13 +115,27 @@ namespace Avalonia.Skia
             public StreamContext(StreamGeometryImpl geometryImpl)
             {
                 _geometryImpl = geometryImpl;
+                _stroke = new SKPathBuilder(geometryImpl._strokePath);
+                _fill = ReferenceEquals(geometryImpl._fillPath, geometryImpl._strokePath)
+                    ? _stroke
+                    : geometryImpl._fillPath is { } fill ? new SKPathBuilder(fill) : null;
             }
 
             /// <inheritdoc />
             /// <remarks>Will update bounds of passed geometry.</remarks>
             public void Dispose()
             {
-                _geometryImpl._bounds = Stroke.TightBounds.ToAvaloniaRect();
+                if (_disposed)
+                    return;
+                _disposed = true;
+
+                using var stroke = Stroke;
+                using var fill = ReferenceEquals(_fill, stroke) ? null : _fill;
+                _geometryImpl._strokePath = stroke.Detach();
+                _geometryImpl._fillPath = ReferenceEquals(_fill, stroke)
+                    ? _geometryImpl._strokePath
+                    : fill?.Detach();
+                _geometryImpl._bounds = _geometryImpl._strokePath.TightBounds.ToAvaloniaRect();
                 _geometryImpl.InvalidateCaches();
             }
 
