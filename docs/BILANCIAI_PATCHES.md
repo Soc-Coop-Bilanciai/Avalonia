@@ -26,7 +26,7 @@ application calls into downstream-only APIs. Configuration remains internal/envi
 Performance results apply only to the measured scenarios and do not establish general
 application improvements.
 
-## First-view investigation
+## Text-layout contract
 
 BIL-AVA-009 avoids a second text-layout allocation when Arrange has the same
 content constraint as Measure and alignment is Left, or Start with left-to-right
@@ -40,9 +40,43 @@ allocation 7.18 -> 6.26 MB. Geometry and PNG hashes matched in all three tested
 constraint/alignment scenarios. Unchanged scenarios also showed about 4% timing
 variation; these results do not establish a whole-page latency improvement.
 
-This change is included in 12.1.4.4 and is absent from 12.1.4.3. A selector type
-prefilter was also evaluated and discarded: mismatch microbenchmarks improved,
-but a mixed-control page comparison did not establish a benefit.
+This change is included in 12.1.4.4 and is absent from 12.1.4.3. Changed constraints
+must still update public TextLayout dimensions, even when shaping is reusable.
+
+## First-opening conclusions
+
+The revision-4 ARM64 navigation comparison used Release, self-contained .NET
+10.0.13, composite ReadyToRun, four horizontal tiles, a 24 Hz cap and disabled
+content prefetch. Thirty fresh processes supplied five first openings per page
+and worker degree, in alternating order. Degree 1 used the same tiled path as
+degree 3. These are warm-OS-cache process starts, not cold boots.
+
+| Page | Settled batch, 1 / 3 participants | UI measure, 1 / 3 participants |
+| --- | ---: | ---: |
+| Controls | 948.5 / 923.7 ms | 449.7 / 451.7 ms |
+| Icons | 920.6 / 887.3 ms | 460.5 / 454.0 ms |
+| Dialogs | 503.9 / 513.2 ms | 63.7 / 60.1 ms |
+
+Overlapping ranges and nonuniform differences do not justify changing the
+three-participant default. Five samples per variant do not establish p95 or
+attribute small effects. Measure includes template creation, styling and text
+formatting; elapsed phase time includes JIT, waits and pauses. It is not exclusive
+CPU time for panel geometry. Failed EventPipe captures supplied no valid method
+CPU or contention attribution.
+
+No additional first-opening performance patch was adopted. An isolated empty
+logical-collection prototype saved 152 bytes per qualifying leaf and zero for
+TextBlock, without a repeatable general timing gain. A separate StyleBase cache
+comparison on 36 processes did not establish a general first-opening improvement
+and was not adopted. Passing prototype behavior tests do not establish a page
+speedup. Existing font/shaping caches, deferred content and virtualization remain
+the starting point; another generic cache is not justified by these observations.
+
+Live layout, styles, resources, bindings and control lifecycle belong to the UI
+thread. Adding generic UI/text workers requires a demonstrated independent data
+boundary, native-resource ownership and stale-result handling. No such additional
+parallel path was qualified. BIL-AVA-010 fixes carousel container lifetime; it is
+not a first-opening optimization or a new hardware performance claim.
 
 Existing compositor render histograms end before the drawing context is disposed.
 In the tiled framebuffer path, that disposal performs picture playback and
@@ -67,13 +101,11 @@ drawing, and incompatible timers keep their own clock. Automatic defaults are se
 before platform initialization; the internal sleep-loop cap is applied only when a
 software framebuffer target is created.
 
-The revision-2 packages were checked with the existing renderer self-test and local
-lifecycle assertions, including framebuffer release after failure. ARM64 animation
-comparisons were specific to the tested workload and do not qualify other workloads.
-The published `12.1.4.1` packages remain unchanged. The immutable revision-2 tag and its
-[manifest](bilanciai-releases/12.1.4.2.json) identify the validated package bytes.
-All 22 revision-2 packages were published on 2026-10-15 and downloaded again with
-matching manifest hashes.
+Earlier renderer/lifecycle checks included framebuffer release after failure;
+their passing results do not qualify every effect or operational workload.
+Local experimental tools and raw logs are not shipped or build dependencies.
+Use the [distribution guide](BILANCIAI_DISTRIBUTION.md) and immutable release
+manifests for publication provenance and the qualification scope of each release.
 
 ## Locating a patch
 

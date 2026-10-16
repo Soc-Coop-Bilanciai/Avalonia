@@ -1,28 +1,42 @@
 # Bilanciai Avalonia distribution
 
-This Avalonia fork carries rendering and text-layout changes while preserving the public API,
-package IDs, assembly names, signing identity and upstream assembly versions.
-`upstream` is `https://github.com/AvaloniaUI/Avalonia.git`; `origin` is the Bilanciai-owned fork.
-The remote URL is recorded in `build/Bilanciai/distribution.json` before publishing.
+This fork preserves Avalonia's public API, package IDs, assembly names, signing
+identity and upstream assembly versions. `origin` is the Bilanciai-owned fork;
+`upstream` is `https://github.com/AvaloniaUI/Avalonia.git`.
 
-## Versions and ownership
+The current desktop release is **12.1.4.5**, tagged at `b207de28d`. It includes
+software rendering, the SkiaSharp 4.153.1 migration, TextBlock layout reuse and
+the carousel lifetime correction. See the [patch register](BILANCIAI_PATCHES.md)
+for contracts, measured results and remaining qualification limits.
 
-Each stable upstream tag has a branch `bilanciai/<upstream>`. A release is an immutable tag
-`bilanciai/<upstream>.<revision>`, for example `bilanciai/12.1.4.1`.
-Packages use the same IDs (`Avalonia`, `Avalonia.Skia`, etc.) and the four-part NuGet version
-`12.1.4.1`. This sorts above `12.1.4`, satisfying third-party minimum dependencies without
-renaming packages or pretending that modified binaries are the official release.
-Prerelease suffixes sort below the stable version; build metadata does not distinguish NuGet identities.
-Increment the revision for every changed release; never replace a published version.
+## Version and provenance contracts
 
-Git commits own changes, [the patch register](BILANCIAI_PATCHES.md) owns their rationale,
-and `distribution.json` owns the upstream tag/commit and release revision. Keep the patch
-series linear. Each commit must carry exactly one stable `Bilanciai-Patch:` trailer.
-Porting uses cherry-pick and range-diff; released history must not be rebased.
-The already published documentation-only commit `cea3d37e3` omitted its trailer.
-`distribution.json` maps that exact commit to BIL-AVA-006 through `legacyPatchIds`;
-packing checks that an explicitly mapped commit changes only Markdown files.
-All new commits still require their trailer.
+Each stable upstream tag has a branch `bilanciai/<upstream>`. Releases use immutable
+`bilanciai/<upstream>.<revision>` tags and four-part NuGet versions. `12.1.4.5`
+sorts above `12.1.4`, satisfying compatible third-party minimum dependencies.
+Prerelease suffixes sort below stable releases; build metadata does not distinguish
+NuGet identities. Increment the revision for every changed release; never replace
+published versions or rebase released history.
+
+`build/Bilanciai/distribution.json` owns the upstream tag/commit, revision and
+repository URL. Git owns changes; every downstream commit requires exactly one
+stable `Bilanciai-Patch: BIL-AVA-NNN` trailer. IDs survive cherry-picks. The published
+Markdown-only commit `cea3d37e3` lacked a trailer: its exact hash is mapped to
+BIL-AVA-006 in `legacyPatchIds`, and packing verifies it changes only Markdown.
+This exception does not apply to new commits.
+
+| Release | Packaged source commit | Manifest | Main change |
+| --- | --- | --- | --- |
+| 12.1.4.1 | `8046b17d7` | [12.1.4.1](bilanciai-releases/12.1.4.1.json) | Initial desktop distribution |
+| 12.1.4.2 | `f236ce70f` | [12.1.4.2](bilanciai-releases/12.1.4.2.json) | Renderer/lifecycle corrections |
+| 12.1.4.3 | `cd08aaee9` | [12.1.4.3](bilanciai-releases/12.1.4.3.json) | SkiaSharp 4.153.1 and SKPathBuilder migration |
+| 12.1.4.4 | `654488b60` | [12.1.4.4](bilanciai-releases/12.1.4.4.json) | Compatible TextBlock layout reuse |
+| **12.1.4.5** | **`b207de28d`** | [12.1.4.5](bilanciai-releases/12.1.4.5.json) | Carousel removal, reinsertion and interaction cancellation |
+
+The manifests retain exact upstream/fork commits, patch series, native inputs and
+all package hashes. Later documentation or publication-script commits on the
+version branch do not change existing package bytes or release provenance.
+Independently released extensions such as DataGrid keep their own versions.
 
 ## Pack and consume locally
 
@@ -36,156 +50,96 @@ git submodule update --init --recursive
 pwsh ./build/Bilanciai/Pack.ps1
 ```
 
-Packing requires a clean committed worktree, an exact matching upstream tag/hash and
-patch IDs on every downstream commit. It invokes Avalonia's own NUKE/NuMerge pipeline
-with a desktop traversal project, producing a coherent set in `artifacts/nuget` and a
-`bilanciai-release.json` manifest containing source commits, patch IDs and package SHA-256 hashes.
-Mobile, browser, WinUI and single-project packaging are outside this desktop workflow.
-The package rejects trimming/NativeAOT because the carried renderer requires untrimmed
-assemblies. The public API contract does not imply those deployment modes are supported.
+Packing requires a clean committed worktree, an exact matching upstream tag/hash
+and patch IDs on every downstream commit. It invokes Avalonia's NUKE/NuMerge
+pipeline with a desktop traversal project, producing a coherent set of 22 packages
+and `bilanciai-release.json` in `artifacts/nuget`. The manifest records commits,
+patch IDs and SHA-256 hashes. Mobile, browser, WinUI and single-project packaging
+are outside this workflow. Trimming/NativeAOT are rejected because the carried
+renderer requires untrimmed assemblies.
 
-The official matching `Avalonia.Native` package supplies the macOS native library when
-packing on Windows/Linux. Its URL/hash are recorded. The script refuses native source
-changes: a native patch requires a real macOS build and qualification before extending
-this workflow. No native binary is silently rebuilt or dropped.
+On Windows/Linux, the matching official `Avalonia.Native` package supplies the
+macOS native library; its URL/hash are recorded. Packing refuses native source
+changes. Such a patch requires a real macOS build and qualification before the
+workflow is extended.
 
-Use `artifacts/nuget` as a local NuGet source and select the same exact fork version
-for all Avalonia packages included in this distribution. Restore and build after
-changing package sources or versions. Building does not qualify rendering on hardware.
+Use `artifacts/nuget` as a local NuGet source and select the exact same fork version
+for every cohort package. Restore and build after source/version changes.
+Building or packing does not qualify hardware rendering. Do not repack an existing
+version after source changes; a changed release needs a new revision.
 
-## Release to the private feed
+## Publish to the private feed
 
 The service index is `https://artifacts.coopbilanciai.it/nuget/v3/index.json`.
-Reading requires configured NuGet credentials; publication additionally uses `NUGET_API_KEY`
-from the environment. Configure credentials in the developer/CI environment, never in Git.
-`dotnet nuget push` discovers the upload resource from the service index.
-If the server requires a separate upload URL, pass it with `Publish.ps1 -Source`.
+The gateway requires HTTP Basic credentials for the `bagetter` source, including
+reads. Keep credentials in developer/CI NuGet configuration, encrypted on Windows;
+never put them in Git. Publication additionally requires `NUGET_API_KEY`.
 
-The gateway also requires HTTP Basic credentials for the `bagetter` source. Keep them in
-the user's NuGet configuration (encrypted on Windows), separate from the upload API key.
-The upstream repository's `NuGet.Config` clears inherited sources, so explicitly select
-the credential-bearing configuration when publishing from this checkout:
+The upstream `NuGet.Config` clears inherited sources. Explicitly select the
+credential-bearing user/CI configuration when publishing from this checkout:
 
 ```powershell
 pwsh ./build/Bilanciai/Publish.ps1 -Source bagetter -ConfigFile "$env:APPDATA/NuGet/NuGet.Config"
 ```
 
-On other systems, pass the path to the appropriate user/CI NuGet configuration instead.
+On other systems, use the appropriate configuration path. `dotnet nuget push`
+discovers the upload resource from the service index; `Publish.ps1 -Source` also
+accepts a separate upload URL if required.
 
-1. Set `repositoryUrl`, review the patch register and commit the final release sources.
-2. Pack; compare public APIs against the matching official package and verify integration
-   builds with official and fork packages.
-3. Create and push the immutable release tag and branch to `origin`.
-4. Run `pwsh ./build/Bilanciai/Publish.ps1` with the publication credential configured.
-5. Archive `bilanciai-release.json` and the packages with the release. Restore once from the
-   private feed into an empty NuGet cache before declaring the release usable.
+1. Set `repositoryUrl`, review patch contracts and commit final release sources.
+2. Pack, compare public APIs/assembly identities against official packages, and
+   verify consumer builds with both official and fork distributions.
+3. Create and push the immutable release tag and version branch to `origin`.
+4. Run `Publish.ps1` with publication credentials configured.
+5. Archive the release manifest and original packages. Restore from the private
+   feed into an empty cache and verify all downloaded package hashes and origins.
 
-Publication checks the release tag and every package hash before the first upload.
-Only the manifest's `.nupkg` files are uploaded; adjacent symbol packages are not published automatically.
-Duplicate versions fail. NuGet uploads are not transactional: after a partial upload,
-inspect the feed and complete only missing packages with their original bytes. Never
-overwrite or rebuild the same version; a changed build needs a new revision.
-The scripts do not push branches, create release tags or publish implicitly during a build.
+Publication checks the release tag and every hash before uploading. Only manifest
+`.nupkg` files are uploaded; symbol packages are not published automatically.
+Duplicate versions fail. Uploads are not transactional: after partial publication,
+inspect the feed and complete only missing packages using the original bytes.
+The scripts do not create tags, push branches or publish implicitly during builds.
 
-Release `12.1.4.1` was published to the private feed on 2026-10-14. All 22 downloaded
-packages matched the SHA-256 hashes in the [archived release manifest](bilanciai-releases/12.1.4.1.json).
-The release tag still identifies the packaged sources; later publishing-script changes
-on the version branch do not change the published binaries or their provenance.
+## Current release verification
 
-Revision `12.1.4.2` was packed and tagged on 2026-10-14 at `f236ce70f`.
-The [revision-2 manifest](bilanciai-releases/12.1.4.2.json) records all 22 package hashes.
-Strict public API/assembly identity checks against official `12.1.4`, Release integration
-builds against official and fork packages, and renderer/lifecycle checks passed. The branch
-and immutable tag are on `origin`. All 22 packages were published to the private feed
-on 2026-10-15; downloading them again confirmed every manifest SHA-256. Symbol packages
-were not uploaded. The release tag and original package bytes remain unchanged.
+All 22 revision-5 packages were published on 2026-10-16 and downloaded again with
+hashes and private-feed origins matching the manifest. An empty-cache NexT restore
+resolved all 12 application cohort packages to 12.1.4.5. Release compilation for
+.NET 8 and .NET 10, strict public API/assembly-identity comparisons against official
+12.1.4, and NexT Release consumer builds against both distributions passed.
+All 164 focused carousel tests passed, covering removal, replacement, reset,
+reinsertion, transfer and collection changes during transitions/swipes. The
+included TextBlock correction passed its 62 focused alignment/invalidation tests.
 
-Independently released extensions such as DataGrid retain their own versions.
+These checks establish package consistency and focused correctness. They do not
+add hardware performance measurements or update an installed operational device.
+Revision 3 originally had build/package checks only; subsequent focused tests do
+not imply general qualification of its graphics dependency update. Target-device
+font fallback, effects, DPI and lifecycle qualification remain necessary.
+Temporary probes, traces and deployment bundles are disposable local artifacts;
+maintained regression tests and release manifests remain versioned.
 
-## Revision 12.1.4.3
+The 2026-10-16 closeout reran all 62 TextBlock and 164 carousel tests on .NET 10,
+plus the renderer profile/cache/timer/tile self-checks against a current source
+build. The legacy .NET 8 Skia Release build passed with zero warnings/errors.
+All five archived manifests matched their immutable tags, and all 22 retained
+revision-5 package hashes matched the release manifest. No release was rebuilt
+or republished by these checks, and no new hardware measurement was performed.
 
-Revision 3 updates the central SkiaSharp, SkiaSharp.NativeAssets.Linux and
-SkiaSharp.NativeAssets.WebAssembly versions to `4.153.1` throughout the fork.
-All packages in the Bilanciai desktop distribution use version `12.1.4.3`.
-HarfBuzzSharp retains its existing independent version.
-Geometry construction uses `SKPathBuilder`, including separate stroke/fill builders
-for stream geometry, and publishes `SKPath` instances when the context is closed.
-
-All 22 packages were published to the private feed on 2026-10-15. The immutable
-`bilanciai/12.1.4.3` tag identifies source commit `cd08aaee9`; the
-[revision-3 manifest](bilanciai-releases/12.1.4.3.json) records the package hashes.
-Downloading every published package again confirmed all manifest SHA-256 hashes.
-Release compilation for .NET 8 and .NET 10 and the desktop packaging pipeline
-completed successfully. Symbol packages were retained locally and were not uploaded.
-
-No automated tests, renderer self-checks, integration restore/build qualification or
-device tests were run for this release. Previous revision-2 checks do not
-qualify this dependency update, and
-this release makes no new performance claim. SkiaSharp v4 changes APIs and rendering
-behavior, including Linux font fallback; target-device qualification remains pending.
-
-## Revision 12.1.4.4
-
-Revision 4 carries BIL-AVA-009: TextBlock reuses its measured TextLayout during
-Arrange when constraints match and alignment is compatible. Other alignments and
-changed constraints retain the existing rebuild behavior. Public APIs, assembly
-identities and the SkiaSharp/HarfBuzz dependency versions remain unchanged.
-
-The 62 focused TextBlock tests cover alignment, embedded controls and invalidation.
-The earlier ARM64 headless comparison measured a lower equal-constraint allocation
-and batch time with matching geometry and PNG hashes; it does not establish a
-whole-page startup improvement. See the patch register for measurement boundaries.
-
-All 22 packages were published to the private feed on 2026-10-16. The immutable
-`bilanciai/12.1.4.4` tag identifies source commit `654488b60`; the
-[revision-4 manifest](bilanciai-releases/12.1.4.4.json) records all package hashes.
-Release compilation for .NET 8 and .NET 10, all 62 focused TextBlock tests, strict
-public API/assembly identity checks against official 12.1.4 and Release integration
-builds against official and fork packages passed. Both builds completed without warnings
-or errors. An integration restore from the private feed into an empty cache resolved
-all 12 tested Avalonia packages to 12.1.4.4. All 22 downloaded distribution packages
-matched their manifest SHA-256 hashes and recorded the private feed as their source.
-Symbol packages were retained locally. No new operational-device installation or
-whole-page hardware measurement was performed for publication.
-
-## Revision 12.1.4.5
-
-Revision 5 carries BIL-AVA-010: carousel collection changes detach removed items
-used as their own containers, including previously visited hidden pages. Removed
-controls can be reinserted or transferred to another carousel. Their visibility
-is restored before preparation so selection does not reject a hidden page.
-Changes during transitions or swipes cancel the old interaction before recycling.
-Containers still present in the items remain cached for ordinary navigation.
-Public APIs, assembly identities and dependency versions remain unchanged.
-
-All 164 focused carousel, carousel-page and virtualizing-panel tests passed,
-including removal, replacement, reset, reinsertion, transfer between carousels
-and collection changes during transitions and swipes. No new device measurement
-or performance improvement is claimed for this lifecycle correction.
-
-All 22 packages were published to the private feed on 2026-10-16. The immutable
-`bilanciai/12.1.4.5` tag identifies source commit `b207de28d`; the
-[revision-5 manifest](bilanciai-releases/12.1.4.5.json) records all package hashes.
-Release compilation for .NET 8 and .NET 10, strict public API/assembly identity
-checks against official 12.1.4 and NexT Release builds against both distributions
-passed. NexT restored from the private feed into an empty cache, resolving all 12
-application cohort packages to 12.1.4.5. All 22 downloaded package hashes and feed
-origins matched the manifest. Symbol packages were retained locally.
-
-## Port to a new official tag
+## Port to a new upstream tag
 
 ```powershell
 pwsh ./build/Bilanciai/Start-Port.ps1 -UpstreamTag <new-stable-tag>
 ```
 
-Start on a clean released/current version branch. The script fetches the requested upstream
-tag, creates a new version branch, initializes submodules and cherry-picks the downstream
-commits in order with `-x`. It never resets an existing branch. On success it updates the
-distribution base/revision and prints `git range-diff` for review.
+Start on a clean released/current version branch. The script fetches the requested
+tag, creates a new version branch, initializes submodules and cherry-picks downstream
+commits in order with `-x`. It never resets an existing branch. Success updates the
+base/revision and prints `git range-diff` for review.
 
-On conflict, the Git sequencer remains intact. Resolve and `git cherry-pick --continue`,
-or `--skip` only after confirming that a patch is obsolete/upstreamed. The diagnostic gives
-the new base and old range; update distribution metadata manually after continuation.
-Review every register entry, retire upstreamed patches and commit metadata with the
-`BIL-AVA-006` trailer. A conflict-free replay is not evidence of behavioral compatibility.
-Repeat API, build and target verification, then release a new immutable version.
+Conflicts leave the Git sequencer intact. Resolve and `git cherry-pick --continue`,
+or skip only after confirming a patch is obsolete/upstreamed. Use the reported
+base/range to update distribution metadata manually after continuation. Review
+every register entry, preserve retired IDs and commit metadata with BIL-AVA-006.
+A conflict-free replay does not establish compatibility: repeat API, build,
+consumer and target checks before releasing a new immutable version.
