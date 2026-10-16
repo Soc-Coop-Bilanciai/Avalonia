@@ -8,7 +8,7 @@ $root = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 Push-Location $root
 $previousCommit = $env:BILANCIAI_SOURCE_COMMIT
 try {
-    $distribution = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'distribution.json') -Raw | ConvertFrom-Json
+    $distribution = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'distribution.json') -Raw | ConvertFrom-Json -AsHashtable
     if ($distribution.upstreamTag -notmatch '^\d+\.\d+\.\d+$' -or [string]$distribution.revision -notmatch '^[1-9]\d*$') {
         throw 'Use an explicit stable upstream version and a positive fork revision.'
     }
@@ -25,8 +25,16 @@ try {
     foreach ($line in $commits) {
         if ([string]::IsNullOrWhiteSpace($line)) { continue }
         $parts = $line -split "`t", 2
-        if ($parts.Count -ne 2 -or $parts[1].Trim() -notmatch '^BIL-AVA-\d{3}$') { throw "Commit lacks a stable patch ID: $line" }
-        $patches += [ordered]@{ commit = $parts[0]; id = $parts[1].Trim() }
+        $patchId = if ($parts.Count -eq 2) { $parts[1].Trim() } else { '' }
+        if ([string]::IsNullOrWhiteSpace($patchId) -and $distribution['legacyPatchIds'] -and $distribution.legacyPatchIds.ContainsKey($parts[0])) {
+            $changedPaths = @(git diff-tree --no-commit-id --name-only -r $parts[0])
+            if (!$changedPaths.Count -or @($changedPaths | Where-Object { $_ -notlike '*.md' }).Count) {
+                throw "Legacy patch IDs are allowed only for documentation commits: $($parts[0])"
+            }
+            $patchId = $distribution.legacyPatchIds[$parts[0]]
+        }
+        if ($patchId -notmatch '^BIL-AVA-\d{3}$') { throw "Commit lacks a stable patch ID: $line" }
+        $patches += [ordered]@{ commit = $parts[0]; id = $patchId }
     }
 
     # The fork changes managed rendering only. Preserve the matching official macOS binary

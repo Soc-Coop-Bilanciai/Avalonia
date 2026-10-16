@@ -19,6 +19,10 @@ Git commits own changes, [the patch register](BILANCIAI_PATCHES.md) owns their r
 and `distribution.json` owns the upstream tag/commit and release revision. Keep the patch
 series linear. Each commit must carry exactly one stable `Bilanciai-Patch:` trailer.
 Porting uses cherry-pick and range-diff; released history must not be rebased.
+The already published documentation-only commit `cea3d37e3` omitted its trailer.
+`distribution.json` maps that exact commit to BIL-AVA-006 through `legacyPatchIds`;
+packing checks that an explicitly mapped commit changes only Markdown files.
+All new commits still require their trailer.
 
 ## Pack and consume locally
 

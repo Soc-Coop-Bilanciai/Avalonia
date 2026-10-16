@@ -2,6 +2,9 @@
   "upstreamTag": "12.1.4",
   "upstreamCommit": "2d79ba55fae1b1e71c69f93a668080c9029e6a31",
   "revision": 5,
+  "legacyPatchIds": {
+    "cea3d37e33780fb75374aea3a19dcad3acf08313": "BIL-AVA-006"
+  },
   "repositoryUrl": "https://github.com/Soc-Coop-Bilanciai/Avalonia",
   "publishSource": "https://artifacts.coopbilanciai.it/nuget/v3/index.json"
 }
