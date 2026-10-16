@@ -144,6 +144,21 @@ matched their manifest SHA-256 hashes and recorded the private feed as their sou
 Symbol packages were retained locally. No new operational-device installation or
 whole-page hardware measurement was performed for publication.
 
+## Revision 12.1.4.5
+
+Revision 5 carries BIL-AVA-010: carousel collection changes detach removed items
+used as their own containers, including previously visited hidden pages. Removed
+controls can be reinserted or transferred to another carousel. Their visibility
+is restored before preparation so selection does not reject a hidden page.
+Changes during transitions or swipes cancel the old interaction before recycling.
+Containers still present in the items remain cached for ordinary navigation.
+Public APIs, assembly identities and dependency versions remain unchanged.
+
+All 164 focused carousel, carousel-page and virtualizing-panel tests passed,
+including removal, replacement, reset, reinsertion, transfer between carousels
+and collection changes during transitions and swipes. No new device measurement
+or performance improvement is claimed for this lifecycle correction.
+
 ## Port to a new official tag
 
 ```powershell
