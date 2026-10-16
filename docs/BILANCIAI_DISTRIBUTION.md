@@ -1,6 +1,6 @@
 # Bilanciai Avalonia distribution
 
-This fork carries internal rendering changes while preserving the public Avalonia API,
+This Avalonia fork carries rendering and text-layout changes while preserving the public API,
 package IDs, assembly names, signing identity and upstream assembly versions.
 `upstream` is `https://github.com/AvaloniaUI/Avalonia.git`; `origin` is the Bilanciai-owned fork.
 The remote URL is recorded in `build/Bilanciai/distribution.json` before publishing.
@@ -45,18 +45,9 @@ packing on Windows/Linux. Its URL/hash are recorded. The script refuses native s
 changes: a native patch requires a real macOS build and qualification before extending
 this workflow. No native binary is silently rebuilt or dropped.
 
-From NextFramework:
-
-```powershell
-dotnet build src/Application.NexT.sln -c Debug -p:AvaloniaDistribution=Official
-dotnet build src/Application.NexT.sln -c Debug -p:AvaloniaDistribution=Bilanciai `
-  -p:AvaloniaForkFeed=C:/CB_SOURCES/Avalonia-Bilanciai/artifacts/nuget
-```
-
-Both profiles use NextFramework's standard project output and intermediate directories.
-Restore and build after switching profiles; do not skip these steps or build different
-profiles concurrently in the same checkout. Use matching profile and version properties
-for restore, build and publish. Building does not qualify rendering on hardware.
+Use `artifacts/nuget` as a local NuGet source and select the same exact fork version
+for all Avalonia packages included in this distribution. Restore and build after
+changing package sources or versions. Building does not qualify rendering on hardware.
 
 ## Release to the private feed
 
@@ -78,7 +69,8 @@ pwsh ./build/Bilanciai/Publish.ps1 -Source bagetter -ConfigFile "$env:APPDATA/Nu
 On other systems, pass the path to the appropriate user/CI NuGet configuration instead.
 
 1. Set `repositoryUrl`, review the patch register and commit the final release sources.
-2. Pack; compare public APIs against the matching official package and build both consumer profiles.
+2. Pack; compare public APIs against the matching official package and verify integration
+   builds with official and fork packages.
 3. Create and push the immutable release tag and branch to `origin`.
 4. Run `pwsh ./build/Bilanciai/Publish.ps1` with the publication credential configured.
 5. Archive `bilanciai-release.json` and the packages with the release. Restore once from the
@@ -98,14 +90,12 @@ on the version branch do not change the published binaries or their provenance.
 
 Revision `12.1.4.2` was packed and tagged on 2026-10-14 at `f236ce70f`.
 The [revision-2 manifest](bilanciai-releases/12.1.4.2.json) records all 22 package hashes.
-Strict public API/assembly identity checks against official `12.1.4`, both NexT Release
-consumer builds and renderer/lifecycle checks passed using these packages. The branch
+Strict public API/assembly identity checks against official `12.1.4`, Release integration
+builds against official and fork packages, and renderer/lifecycle checks passed. The branch
 and immutable tag are on `origin`. All 22 packages were published to the private feed
 on 2026-10-15; downloading them again confirmed every manifest SHA-256. Symbol packages
 were not uploaded. The release tag and original package bytes remain unchanged.
 
-Reusable Bilanciai framework libraries are built/packed against official Avalonia minimum
-dependencies. The application selects the exact compatible official or fork cohort.
 Independently released extensions such as DataGrid retain their own versions.
 
 ## Revision 12.1.4.3
@@ -124,8 +114,8 @@ Downloading every published package again confirmed all manifest SHA-256 hashes.
 Release compilation for .NET 8 and .NET 10 and the desktop packaging pipeline
 completed successfully. Symbol packages were retained locally and were not uploaded.
 
-No automated tests, renderer self-checks, consumer restore/build qualification or
-device tests were run, as explicitly requested. Previous revision-2 checks do not
+No automated tests, renderer self-checks, integration restore/build qualification or
+device tests were run for this release. Previous revision-2 checks do not
 qualify this dependency update, and
 this release makes no new performance claim. SkiaSharp v4 changes APIs and rendering
 behavior, including Linux font fallback; target-device qualification remains pending.
@@ -146,10 +136,10 @@ All 22 packages were published to the private feed on 2026-10-16. The immutable
 `bilanciai/12.1.4.4` tag identifies source commit `654488b60`; the
 [revision-4 manifest](bilanciai-releases/12.1.4.4.json) records all package hashes.
 Release compilation for .NET 8 and .NET 10, all 62 focused TextBlock tests, strict
-public API/assembly identity checks against official 12.1.4 and both NexT Release
-consumer profiles passed. Both consumer builds completed without warnings or errors.
-NexT restored from the private feed into an empty cache with all 12 application
-cohort packages resolving to 12.1.4.4. All 22 downloaded distribution packages
+public API/assembly identity checks against official 12.1.4 and Release integration
+builds against official and fork packages passed. Both builds completed without warnings
+or errors. An integration restore from the private feed into an empty cache resolved
+all 12 tested Avalonia packages to 12.1.4.4. All 22 downloaded distribution packages
 matched their manifest SHA-256 hashes and recorded the private feed as their source.
 Symbol packages were retained locally. No new operational-device installation or
 whole-page hardware measurement was performed for publication.
