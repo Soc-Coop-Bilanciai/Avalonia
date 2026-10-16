@@ -15,10 +15,36 @@ The release manifest records both IDs and exact hashes.
 | BIL-AVA-006 | Desktop packaging, provenance, immutable publication and port scripts | None | Distribution infrastructure | Downstream only |
 | BIL-AVA-007 | Restrict automatic defaults to Linux ARM64; serial fallback and framebuffer cleanup; protect cached stroke use; preserve the timer cap across display changes | BIL-AVA-001, 003, 005 | Released in 12.1.4.2 | Downstream only |
 | BIL-AVA-008 | Upgrade the fork-wide SkiaSharp and Linux/WebAssembly native assets to 4.153.1; migrate geometry construction to SKPathBuilder | None | Released in 12.1.4.3; no new runtime or performance qualification | Downstream only |
+| BIL-AVA-009 | Reuse TextBlock layout between Measure and Arrange when constraints and alignment permit | None | Included in 12.1.4.4; 62 TextBlock tests pass | Not submitted |
 
 The public Avalonia API and assembly identities remain upstream-compatible. Do not add
 application calls into downstream-only APIs. Configuration remains internal/environment-based.
 The patches reproduce existing behavior; this migration does not add new performance claims.
+
+## First-view investigation
+
+BIL-AVA-009 avoids a second text-layout allocation when Arrange has the same
+content constraint as Measure and alignment is Left, or Start with left-to-right
+flow. Other alignments retain rebuilding: reading TextLayout while measure is
+invalid creates a left-aligned layout which Arrange must correct. Tests cover
+these alignment cases, embedded controls and subsequent invalidation.
+
+An ARM64 headless ABBA probe on cb-next-15631935 measured 1,000 new TextBlock
+instances per batch: equal-constraint median 229.2 -> 202.3 ms and managed
+allocation 7.18 -> 6.26 MB. Geometry and PNG hashes matched in all three tested
+constraint/alignment scenarios. Unchanged scenarios also showed about 4% timing
+variation; these results do not establish a whole-page latency improvement.
+
+This change is included in 12.1.4.4 and is absent from 12.1.4.3. A selector type
+prefilter was also evaluated and discarded: mismatch microbenchmarks improved,
+but a mixed-control page comparison did not establish a benefit.
+
+Existing compositor render histograms end before the drawing context is disposed.
+In the tiled framebuffer path, that disposal performs picture playback and
+framebuffer delivery. Use a post-target compositor job to include those phases;
+batch processing alone does not establish frame rendering or display scanout.
+See NextFramework's `src/Bilanciai.Application.NexT/Docs/PERFORMANCE_TESTING.md`
+for the ARM64 measurements and their boundaries.
 
 ## Review on every upstream update
 

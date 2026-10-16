@@ -868,11 +868,15 @@ namespace Avalonia.Controls
 
             var availableSize = finalSize.Deflate(padding);
 
-            // Dispose the TextLayout but preserve the TextRunCache so shaped runs are reused.
-            DisposeTextLayout();
-            _constraint = availableSize;
+            // A layout created while measure was invalid uses left alignment.
+            if (_constraint != availableSize ||
+                (TextAlignment != TextAlignment.Left &&
+                    (TextAlignment != TextAlignment.Start || FlowDirection != FlowDirection.LeftToRight)))
+            {
+                DisposeTextLayout();
+                _constraint = availableSize;
+            }
 
-            //This implicitly recreated the TextLayout with a new constraint.
             var textLayout = TextLayout;
 
             if (HasComplexContent)

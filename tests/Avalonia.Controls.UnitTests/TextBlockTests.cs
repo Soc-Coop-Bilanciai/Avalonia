@@ -188,6 +188,70 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Theory]
+        [InlineData(TextAlignment.Left, FlowDirection.LeftToRight)]
+        [InlineData(TextAlignment.Left, FlowDirection.RightToLeft)]
+        [InlineData(TextAlignment.Start, FlowDirection.LeftToRight)]
+        public void Arrange_With_Measured_Size_Should_Reuse_Left_Aligned_Layout(TextAlignment alignment, FlowDirection direction)
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+            var target = new TextBlock { Text = "Hello World", TextAlignment = alignment, FlowDirection = direction };
+            var size = new Size(400, 48);
+
+            target.Measure(size);
+            var measured = target.TextLayout;
+            target.Arrange(new Rect(size));
+
+            Assert.Same(measured, target.TextLayout);
+            Assert.Equal(0, target.TextLayout.TextLines[0].Start);
+        }
+
+        [Theory]
+        [InlineData(TextAlignment.Center, FlowDirection.LeftToRight)]
+        [InlineData(TextAlignment.Right, FlowDirection.LeftToRight)]
+        [InlineData(TextAlignment.Start, FlowDirection.RightToLeft)]
+        public void Arrange_With_Measured_Size_Should_Apply_Paragraph_Alignment(TextAlignment alignment, FlowDirection direction)
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+            var target = new TextBlock { Text = "Hello World", TextAlignment = alignment, FlowDirection = direction };
+            var size = new Size(400, 48);
+
+            target.Measure(size);
+            target.Arrange(new Rect(size));
+            target.InvalidateMeasure();
+            Assert.False(target.IsMeasureValid);
+            Assert.Equal(0, target.TextLayout.TextLines[0].Start);
+            target.Measure(size);
+            target.Arrange(new Rect(size));
+
+            Assert.True(target.TextLayout.TextLines[0].Start > 0);
+        }
+
+        [Fact]
+        public void Reused_Layout_Should_Arrange_And_Remeasure_Embedded_Control()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+            var child = new Border { Width = 20, Height = 10 };
+            var target = new TextBlock { Inlines = new InlineCollection { new InlineUIContainer(child) } };
+            var size = new Size(400, 48);
+
+            target.Measure(size);
+            var measured = target.TextLayout;
+            target.Arrange(new Rect(size));
+
+            Assert.Same(measured, target.TextLayout);
+            Assert.True(child.IsArrangeValid);
+            Assert.Equal(new Size(20, 10), child.Bounds.Size);
+
+            child.Width = 30;
+            target.InvalidateMeasure();
+            target.Measure(size);
+            target.Arrange(new Rect(size));
+
+            Assert.Equal(new Size(30, 10), child.Bounds.Size);
+            Assert.Equal(30, target.TextLayout.Width);
+        }
+
         [Fact]
         public void Calling_Measure_With_Infinite_Space_Should_Set_DesiredSize()
         {
