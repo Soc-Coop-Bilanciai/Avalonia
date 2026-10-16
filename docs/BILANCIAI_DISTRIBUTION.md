@@ -163,6 +163,15 @@ including removal, replacement, reset, reinsertion, transfer between carousels
 and collection changes during transitions and swipes. No new device measurement
 or performance improvement is claimed for this lifecycle correction.
 
+All 22 packages were published to the private feed on 2026-10-16. The immutable
+`bilanciai/12.1.4.5` tag identifies source commit `b207de28d`; the
+[revision-5 manifest](bilanciai-releases/12.1.4.5.json) records all package hashes.
+Release compilation for .NET 8 and .NET 10, strict public API/assembly identity
+checks against official 12.1.4 and NexT Release builds against both distributions
+passed. NexT restored from the private feed into an empty cache, resolving all 12
+application cohort packages to 12.1.4.5. All 22 downloaded package hashes and feed
+origins matched the manifest. Symbol packages were retained locally.
+
 ## Port to a new official tag
 
 ```powershell

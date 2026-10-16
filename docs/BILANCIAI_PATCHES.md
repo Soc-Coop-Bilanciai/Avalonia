@@ -19,7 +19,7 @@ The release manifest records both IDs and exact hashes.
 | BIL-AVA-007 | Limit automatic defaults to Linux ARM64 and use serial fallback for unsupported framebuffers; fix framebuffer cleanup and cached-path lifetime; preserve the timer cap across display changes | BIL-AVA-001, 003, 005 | Released in 12.1.4.2 | Downstream only |
 | BIL-AVA-008 | Upgrade the fork-wide SkiaSharp and Linux/WebAssembly native assets to 4.153.1; migrate geometry construction to SKPathBuilder for compatibility with the updated API | None | Released in 12.1.4.3; no new runtime or performance qualification | Downstream only |
 | BIL-AVA-009 | Reuse TextBlock layout between Measure and Arrange when constraints and alignment permit, avoiding a second layout allocation | None | Released in 12.1.4.4; 62 TextBlock tests pass | Not submitted |
-| BIL-AVA-010 | Detach removed own-container carousel items, clear their preparation marker for reinsertion and cancel transitions/gestures when item definitions change | None | Included in 12.1.4.5 | Not submitted |
+| BIL-AVA-010 | Detach removed own-container carousel items, clear their preparation marker for reinsertion and cancel transitions/gestures when item definitions change | None | Released in 12.1.4.5; 164 focused carousel tests pass | Not submitted |
 
 The public Avalonia API and assembly identities remain upstream-compatible. Do not add
 application calls into downstream-only APIs. Configuration remains internal/environment-based.
