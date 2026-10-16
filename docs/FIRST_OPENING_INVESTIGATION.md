@@ -16,6 +16,9 @@ The required immutable tag `bilanciai/12.1.4.4` resolves to
 `0b6c5160e2bc63c508a2a4b51fb927c2cb54adde`; only three documentation/manifest files
 differed from the release. Framework source therefore matched the required
 baseline. The prototype worktree starts at the exact release commit.
+The two existing Bilanciai guides acquired concurrent edits later in the session;
+those edits were preserved. No framework/build/test source changed in the primary
+checkout.
 
 Read together, without pooling their populations:
 
@@ -176,6 +179,53 @@ The Icons workload uses synchronous conversion and immediate vector fallback;
 the provided content is drawable without waiting for a later raster cache.
 Separate diagnostics distinguish absent content from pending asynchronous work.
 
+## Diagnostic capture quality
+
+EventPipe diagnostics used the retained `dotnet-trace` 10.0.750501 tool, outside
+the latency population. Four captures failed to finish normally: an Icons child
+launch, two Controls child launches (including explicit duration and a diagnostic
+post-result hold), and a Controls attach. Collectors/children were bounded by
+external timeouts. The precise shutdown/collector failure cause was not established.
+An additional invalid stopping-filter invocation failed before launching NexT.
+
+All four resulting streams fail strict TraceEvent conversion with
+`System.FormatException: Read past end of stream`. The failure-quality JSON files
+retain raw SHA256/size and exception details; window, samples, event loss and
+rundown completeness are unknown. No partial ETLX or sampled stack total is used
+for source attribution, CPU percentages, waiting time or contention. The separate
+image diagnostic produced complete NAV rows and the asset identities above before
+the collector failure; that validates content identity, not the failed trace.
+
+Consequently, this investigation demonstrates the elapsed UI-measure phase and
+the small allocation defect, but cannot rank ApplyTemplate, ApplyStyling and text
+by exclusive CPU in the real Navigator. The older isolated-host nested stack
+observations must not fill that gap. Quantitative waiting/lock-contention and
+per-tile utilization remain unmeasured.
+
+Four additional untraced diagnostic processes use OS-thread processor counters
+for Controls/Icons at degrees 1 and 3. They are not added to the 30 latency runs.
+Snapshots bracket a slightly wider interval than page stamps and include their
+own reading overhead. Values have coarse observed 10 ms increments; thread names
+do not identify every job executed by a general ThreadPool worker.
+
+| Diagnostic page | Workers | UI thread CPU ms | Other retained thread CPU ms | Process CPU ms | Excluded thread IDs |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Controls | 1 | 1020 | 150 | 1165.5 | none |
+| Controls | 3 | 850 | 160 | 1009.3 | none |
+| Icons | 1 | 800 | 160 | 940.0 | none |
+| Icons | 3 | 990 | 330 | 1419.1 | 307275 |
+
+The UI is the major CPU consumer during these observed navigation intervals;
+the counters do not isolate CPU inside Measure. At degree 3, Controls has 90 ms on another
+application thread and 30/20 ms on two ThreadPool workers; this demonstrates
+work on multiple threads without proving scheduling overlap or assigning it to a raster tile. Icons/3 has
+150 ms on the tiered-compilation thread, 100 ms on another application thread and
+40/20 ms on two ThreadPool workers. The excluded thread prevents a complete sum
+in that case; snapshots are non-atomic in every case. These single observations
+cannot estimate variant speedups or attribute the UI cost to template/style/text
+methods, and CPU deltas do not measure waiting or lock contention.
+`thread-cpu-summary.json` retains every thread ID/name/delta and the exclusions.
+
 ## Repeated work and existing reuse
 
 | Work category | Verified behavior and implication |
@@ -319,10 +369,10 @@ deferred Controls tab are already implemented. Removing the transition is not a
 general solution; the earlier no-fade result is a separate
 population and no transition was removed in these tests.
 
-The VirtualizingCarouselPanel own-container retention defect is confirmed by the
-existing workload evidence, but is separate from first opening. Any eventual fork
-fix belongs in removed/reset own-container handling, including re-add and
-transition tests; it must not be credited as a first-opening optimization.
+The VirtualizingCarouselPanel own-container retention defect is fixed in
+12.1.4.5 (BIL-AVA-010), with removed/reset containers, reinsertion and interaction
+changes covered by focused tests. It is separate from first opening and must not
+be credited as a first-opening optimization.
 
 **Recommendation:** do not create a performance release from these small
 candidates. The next shared fork intervention should be opt-in diagnostic scopes
@@ -330,7 +380,10 @@ at the existing Diagnostic boundary for actual template builds and TextLayout
 creation/reformat reasons, paired with existing style/layout scopes. Aggregate
 per type and per navigation, not per-view product instrumentation. This can
 separate first-time realization from avoidable repeats before changing lifecycle
-or text contracts. Promote a functional patch only when a substantial repeated
+or text contracts. Specifically, count inside the template-identity change branch
+of `TemplatedControl.ApplyTemplate`, and around `TextBlock.CreateTextLayoutCore`
+with the invalidation/constraint reason; use existing style/layout activities for
+correlation. Keep diagnostics disabled in latency runs. Promote a functional patch only when a substantial repeated
 path is demonstrated and a rebuilt complete composite cohort improves the real
 navigation workload at unchanged geometry, resources and behavior. Keep the
 allocation prototype as evidence rather than attributing a page-speed improvement
