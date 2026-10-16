@@ -142,6 +142,18 @@ The earlier ARM64 headless comparison measured a lower equal-constraint allocati
 and batch time with matching geometry and PNG hashes; it does not establish a
 whole-page startup improvement. See the patch register for measurement boundaries.
 
+All 22 packages were published to the private feed on 2026-10-16. The immutable
+`bilanciai/12.1.4.4` tag identifies source commit `654488b60`; the
+[revision-4 manifest](bilanciai-releases/12.1.4.4.json) records all package hashes.
+Release compilation for .NET 8 and .NET 10, all 62 focused TextBlock tests, strict
+public API/assembly identity checks against official 12.1.4 and both NexT Release
+consumer profiles passed. Both consumer builds completed without warnings or errors.
+NexT restored from the private feed into an empty cache with all 12 application
+cohort packages resolving to 12.1.4.4. All 22 downloaded distribution packages
+matched their manifest SHA-256 hashes and recorded the private feed as their source.
+Symbol packages were retained locally. No new operational-device installation or
+whole-page hardware measurement was performed for publication.
+
 ## Port to a new official tag
 
 ```powershell

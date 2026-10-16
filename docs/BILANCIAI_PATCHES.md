@@ -15,7 +15,7 @@ The release manifest records both IDs and exact hashes.
 | BIL-AVA-006 | Desktop packaging, provenance, immutable publication and port scripts | None | Distribution infrastructure | Downstream only |
 | BIL-AVA-007 | Restrict automatic defaults to Linux ARM64; serial fallback and framebuffer cleanup; protect cached stroke use; preserve the timer cap across display changes | BIL-AVA-001, 003, 005 | Released in 12.1.4.2 | Downstream only |
 | BIL-AVA-008 | Upgrade the fork-wide SkiaSharp and Linux/WebAssembly native assets to 4.153.1; migrate geometry construction to SKPathBuilder | None | Released in 12.1.4.3; no new runtime or performance qualification | Downstream only |
-| BIL-AVA-009 | Reuse TextBlock layout between Measure and Arrange when constraints and alignment permit | None | Included in 12.1.4.4; 62 TextBlock tests pass | Not submitted |
+| BIL-AVA-009 | Reuse TextBlock layout between Measure and Arrange when constraints and alignment permit | None | Released in 12.1.4.4; 62 TextBlock tests pass | Not submitted |
 
 The public Avalonia API and assembly identities remain upstream-compatible. Do not add
 application calls into downstream-only APIs. Configuration remains internal/environment-based.
