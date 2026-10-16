@@ -130,6 +130,18 @@ qualify this dependency update, and
 this release makes no new performance claim. SkiaSharp v4 changes APIs and rendering
 behavior, including Linux font fallback; target-device qualification remains pending.
 
+## Revision 12.1.4.4
+
+Revision 4 carries BIL-AVA-009: TextBlock reuses its measured TextLayout during
+Arrange when constraints match and alignment is compatible. Other alignments and
+changed constraints retain the existing rebuild behavior. Public APIs, assembly
+identities and the SkiaSharp/HarfBuzz dependency versions remain unchanged.
+
+The 62 focused TextBlock tests cover alignment, embedded controls and invalidation.
+The earlier ARM64 headless comparison measured a lower equal-constraint allocation
+and batch time with matching geometry and PNG hashes; it does not establish a
+whole-page startup improvement. See the patch register for measurement boundaries.
+
 ## Port to a new official tag
 
 ```powershell
