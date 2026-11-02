@@ -52,6 +52,36 @@ public class SoftwareStrokeCacheTests
         AssertMatchesNative(CreateGeometry(), new ImmutablePen(0xb0205090, 3), Matrix.CreateTranslation(.25, .75), true);
     }
 
+    [Theory]
+    [InlineData(EdgeMode.Unspecified)]
+    [InlineData(EdgeMode.Aliased)]
+    public void Closed_Geometry_With_A_Hole_Matches_Native(EdgeMode edgeMode)
+    {
+        var geometry = new StreamGeometryImpl();
+        using (var path = geometry.Open())
+        {
+            path.SetFillRule(FillRule.EvenOdd);
+            path.BeginFigure(new Point(30.25, 25.75), true);
+            path.LineTo(new Point(290.25, 25.75));
+            path.LineTo(new Point(290.25, 215.75));
+            path.LineTo(new Point(30.25, 215.75));
+            path.EndFigure(true);
+            path.BeginFigure(new Point(100.25, 80.75), true);
+            path.LineTo(new Point(220.25, 80.75));
+            path.LineTo(new Point(220.25, 180.75));
+            path.LineTo(new Point(100.25, 180.75));
+            path.EndFigure(true);
+        }
+
+        var pen = new ImmutablePen(0xff205090, 3);
+        using var actual = Render(geometry, pen, Matrix.Identity, true, 1, edgeMode, Brushes.SkyBlue);
+        using var expected = Render(geometry, pen, Matrix.Identity, false, 1, edgeMode, Brushes.SkyBlue);
+        Assert.Equal(expected.Bytes, actual.Bytes);
+        Assert.Equal(SKColors.White, actual.GetPixel(160, 120));
+        Assert.NotEqual(SKColors.White, actual.GetPixel(60, 60));
+        Assert.Equal(1, CachedOutlineCount(geometry));
+    }
+
     [Fact]
     public void Gradient_And_Opacity_Are_Not_Baked_Into_The_Outline()
     {
@@ -138,15 +168,17 @@ public class SoftwareStrokeCacheTests
         Assert.Equal(cached, CachedOutlineCount(geometry) > 0);
     }
 
-    private static SKBitmap Render(StreamGeometryImpl geometry, IPen pen, Matrix matrix, bool qualifiedSurface, double opacity)
+    private static SKBitmap Render(StreamGeometryImpl geometry, IPen pen, Matrix matrix, bool qualifiedSurface, double opacity,
+        EdgeMode edgeMode = EdgeMode.Unspecified, IBrush? fill = null)
     {
         using var surface = CreateSurface();
         using (var context = CreateContext(surface, qualifiedSurface))
         {
             context.Clear(Colors.White);
+            context.RenderOptions = new RenderOptions { EdgeMode = edgeMode };
             context.Transform = matrix;
             context.PushOpacity(opacity, null);
-            context.DrawGeometry(null, pen, geometry);
+            context.DrawGeometry(fill, pen, geometry);
             context.PopOpacity();
         }
         return Pixels(surface);

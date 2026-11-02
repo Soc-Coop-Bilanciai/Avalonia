@@ -27,16 +27,34 @@ public class FramebufferFailureTests
         Assert.Equal(1, framebuffer.UnlockCount);
     }
 
+    [Fact]
+    public void Failed_Context_Creation_Can_Be_Followed_By_Success_On_The_Same_Target()
+    {
+        using var framebuffer = new TestFramebuffer(new PixelSize(0, 8));
+        using var target = new FramebufferRenderTarget(framebuffer);
+        Assert.Throws<ArgumentException>(() => target.CreateDrawingContext(default, out _));
+        Assert.Equal(1, framebuffer.UnlockCount);
+
+        framebuffer.Size = new PixelSize(8, 8);
+        using (var context = target.CreateDrawingContext(default, out _))
+        {
+            context.Clear(default);
+            Assert.Equal(1, framebuffer.UnlockCount);
+        }
+        Assert.Equal(2, framebuffer.UnlockCount);
+    }
+
     private sealed class TestFramebuffer(PixelSize size) : IFramebufferPlatformSurface, IFramebufferRenderTarget
     {
         private GCHandle _pin = GCHandle.Alloc(new byte[256], GCHandleType.Pinned);
         public bool RetainsFrameContents => true;
+        public PixelSize Size { get; set; } = size;
         public int UnlockCount { get; private set; }
         public IFramebufferRenderTarget CreateFramebufferRenderTarget() => this;
         public ILockedFramebuffer Lock(IRenderTarget.RenderTargetSceneInfo sceneInfo, out FramebufferLockProperties properties)
         {
             properties = new FramebufferLockProperties(true);
-            return new LockedFramebuffer(_pin.AddrOfPinnedObject(), size, 32,
+            return new LockedFramebuffer(_pin.AddrOfPinnedObject(), Size, 32,
                 new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul, () => UnlockCount++);
         }
         public void Dispose() { if (_pin.IsAllocated) _pin.Free(); }
