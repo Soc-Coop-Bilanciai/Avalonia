@@ -687,9 +687,19 @@ namespace Avalonia.Controls
         {
             base.OnItemsChanged(items, e);
 
+            if (_transitionFrom is not null || _swipeTarget is not null || _isDragging ||
+                _completionCts is not null || _offsetAnimationCts is not null)
+            {
+                _completionCts?.Cancel();
+                _completionCts = null;
+                ResetSwipeState();
+                ResetSinglePageState();
+            }
+
             if (UsesViewportFractionLayout() || _viewportRealized.Count > 0)
             {
                 ClearViewportRealized();
+                RemoveDetachedItems(items);
                 InvalidateMeasure();
                 return;
             }
@@ -760,7 +770,23 @@ namespace Avalonia.Controls
                     break;
             }
 
+            RemoveDetachedItems(items);
             InvalidateMeasure();
+        }
+
+        private void RemoveDetachedItems(IReadOnlyList<object?> items)
+        {
+            for (var i = Children.Count - 1; i >= 0; --i)
+            {
+                var child = Children[i];
+                if (child.GetValue(RecycleKeyProperty) == s_itemIsItsOwnContainer && !items.Contains(child))
+                {
+                    RemoveInternalChild(child);
+                    child.ClearValue(RecycleKeyProperty);
+                    // Release the carousel's hidden state before another owner selects this item.
+                    child.IsVisible = true;
+                }
+            }
         }
 
         private Control GetOrCreateElement(IReadOnlyList<object?> items, int index)
@@ -804,6 +830,8 @@ namespace Avalonia.Controls
             var controlItem = (Control)item!;
             var generator = ItemContainerGenerator!;
 
+            controlItem.IsVisible = true;
+
             if (!controlItem.IsSet(RecycleKeyProperty))
             {
                 generator.PrepareItemContainer(controlItem, controlItem, index);
@@ -812,7 +840,6 @@ namespace Avalonia.Controls
                 generator.ItemContainerPrepared(controlItem, item, index);
             }
 
-            controlItem.IsVisible = true;
             return controlItem;
         }
 

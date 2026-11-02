@@ -170,6 +170,116 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
+        [Theory]
+        [InlineData(1d, "remove")]
+        [InlineData(1d, "replace")]
+        [InlineData(1d, "clear")]
+        [InlineData(1d, "source")]
+        [InlineData(0.8, "remove")]
+        [InlineData(0.8, "replace")]
+        [InlineData(0.8, "clear")]
+        [InlineData(0.8, "source")]
+        public void Removed_Own_Containers_Are_Detached(double viewportFraction, string change)
+        {
+            using var app = Start();
+            var removed = new Control[] { new Button(), new Canvas() };
+            var items = new ObservableCollection<Control>(removed);
+            var (target, carousel) = CreateTarget(items, viewportFraction: viewportFraction);
+            carousel.SelectedIndex = 1;
+            Layout(target);
+
+            switch (change)
+            {
+                case "remove":
+                    items.RemoveAt(0);
+                    break;
+                case "replace":
+                    items[0] = new Button();
+                    break;
+                case "clear":
+                    items.Clear();
+                    break;
+                case "source":
+                    carousel.ItemsSource = new[] { new Button() };
+                    break;
+            }
+            Layout(target);
+
+            foreach (var control in removed.Where(x => !carousel.Items.Contains(x)))
+            {
+                Assert.DoesNotContain(control, target.Children);
+                Assert.Null(control.GetVisualParent());
+                Assert.Null(control.Parent);
+            }
+        }
+
+        [Theory]
+        [InlineData(1d)]
+        [InlineData(0.8)]
+        public void Replacing_Own_Containers_Does_Not_Accumulate_Children(double viewportFraction)
+        {
+            using var app = Start();
+            var (target, carousel) = CreateTarget(new[] { new ContentPage() }, viewportFraction: viewportFraction);
+
+            for (var i = 0; i < 4; i++)
+            {
+                var page = new ContentPage();
+                carousel.ItemsSource = new[] { page };
+                Layout(target);
+                Assert.Same(page, Assert.Single(target.Children));
+                Assert.True(page.IsVisible);
+            }
+        }
+
+        [Theory]
+        [InlineData(1d)]
+        [InlineData(0.8)]
+        public void Removed_Own_Container_Can_Be_Reinserted_Or_Transferred(double viewportFraction)
+        {
+            using var app = Start();
+            var page = new ContentPage();
+            var items = new ObservableCollection<Control> { page };
+            var (target, carousel) = CreateTarget(items, viewportFraction: viewportFraction);
+
+            items.Clear();
+            Layout(target);
+            items.Add(page);
+            carousel.SelectedIndex = 0;
+            Layout(target);
+            Assert.Same(page, Assert.Single(target.Children));
+            Assert.True(page.IsVisible);
+
+            items.Clear();
+            Layout(target);
+            var (otherPanel, otherCarousel) = CreateTarget(new[] { page }, viewportFraction: viewportFraction);
+            Assert.Same(page, Assert.Single(otherPanel.Children));
+            Assert.Same(otherCarousel, page.Parent);
+            Assert.True(page.IsVisible);
+        }
+
+        [Theory]
+        [InlineData(1d)]
+        [InlineData(0.8)]
+        public void Replacing_Items_During_Swipe_Releases_Old_Containers(double viewportFraction)
+        {
+            using var app = Start();
+            var items = new Control[] { new ContentPage(), new ContentPage() };
+            var (target, carousel) = CreateTarget(items, viewportFraction: viewportFraction);
+            carousel.IsSwipeEnabled = true;
+            target.RaiseEvent(new SwipeGestureEventArgs(1, new Vector(30, 0), default));
+            Assert.True(carousel.IsSwiping);
+
+            var replacement = new ContentPage();
+            carousel.ItemsSource = new[] { replacement };
+            Layout(target);
+            target.RaiseEvent(new SwipeGestureEndedEventArgs(1, default));
+
+            Assert.False(carousel.IsSwiping);
+            Assert.Same(replacement, Assert.Single(target.Children));
+            Assert.True(replacement.IsVisible);
+            Assert.All(items, item => Assert.Null(item.GetVisualParent()));
+        }
+
         [Fact]
         public void ViewportFraction_Centers_Selected_Item_And_Peeks_Neighbors()
         {
@@ -252,6 +362,36 @@ namespace Avalonia.Controls.UnitTests
 
         public class Transitions : ScopedTestBase
         {
+            [Fact]
+            public void Replacing_Items_Cancels_Transition_And_Releases_Outgoing_Containers()
+            {
+                using var app = Start();
+                using var sync = UnitTestSynchronizationContext.Begin();
+                var items = new Control[] { new Button(), new Canvas() };
+                var completion = new TaskCompletionSource();
+                var transition = new Mock<IPageTransition>();
+                CancellationToken cancellation = default;
+                transition.Setup(x => x.Start(It.IsAny<Visual>(), It.IsAny<Visual>(),
+                        It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                    .Callback<Visual, Visual, bool, CancellationToken>((_, _, _, token) => cancellation = token)
+                    .Returns(completion.Task);
+                var (target, carousel) = CreateTarget(items, transition.Object);
+                carousel.SelectedIndex = 1;
+                Layout(target);
+
+                var replacement = new ContentPage();
+                carousel.ItemsSource = new[] { replacement };
+                Layout(target);
+                Assert.True(cancellation.IsCancellationRequested);
+                Assert.Same(replacement, Assert.Single(target.Children));
+                Assert.All(items, item => Assert.Null(item.GetVisualParent()));
+
+                completion.SetResult();
+                sync.ExecutePostedCallbacks();
+                Assert.Same(replacement, Assert.Single(target.Children));
+                Assert.True(replacement.IsVisible);
+            }
+
             [Fact]
             public void Initial_Item_Does_Not_Start_Transition()
             {
