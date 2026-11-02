@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -15,6 +16,41 @@ namespace Avalonia.Skia
     {
         private readonly object _lock = new();
         private PathCache _pathCache;
+        internal static readonly bool StrokeCacheEnabled = Environment.GetEnvironmentVariable("AVALONIA_STROKE_CACHE") != "0";
+        private Dictionary<(double, PenLineCap, PenLineJoin, double), SKPath>? _strokeFills;
+
+        public bool TryDrawCachedStroke(SKCanvas canvas, IPen pen, SKPaint paint)
+        {
+            lock (_lock)
+            {
+                if (pen.DashStyle != null || StrokePath == null)
+                    return false;
+                _strokeFills ??= new();
+                var key = (pen.Thickness, pen.LineCap, pen.LineJoin, pen.MiterLimit);
+                if (!_strokeFills.TryGetValue(key, out var outline))
+                {
+                    if (_strokeFills.Count >= 4)
+                        ClearStrokeFills();
+                    outline = SKPathHelper.CreateStrokedPath(StrokePath, pen);
+                    if (outline == null)
+                        return false;
+                    _strokeFills[key] = outline;
+                }
+                // Keep the native path alive until Skia has consumed or recorded it.
+                paint.IsStroke = false;
+                canvas.DrawPath(outline, paint);
+                return true;
+            }
+        }
+
+        private void ClearStrokeFills()
+        {
+            if (_strokeFills == null)
+                return;
+            foreach (var path in _strokeFills.Values)
+                path.Dispose();
+            _strokeFills.Clear();
+        }
         private SKPathMeasure? _cachedPathMeasure;
 
         private SKPathMeasure CachedPathMeasure => _cachedPathMeasure ??= new SKPathMeasure(StrokePath!);
@@ -177,6 +213,7 @@ namespace Avalonia.Skia
             {
                 _pathCache.Dispose();
                 _pathCache = default;
+                ClearStrokeFills();
             }
         }
 

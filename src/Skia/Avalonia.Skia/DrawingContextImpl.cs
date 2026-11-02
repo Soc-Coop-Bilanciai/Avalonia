@@ -303,7 +303,14 @@ namespace Avalonia.Skia
             {
                 using (stroke)
                 {
-                    Canvas.DrawPath(impl.StrokePath, stroke.Paint);
+                    var matrix = Canvas.TotalMatrix;
+                    // Skia uses coverage-modulated hairlines at <= 1 device pixel.
+                    var useStrokeCache = GeometryImpl.StrokeCacheEnabled && _grContext == null && Surface != null
+                        && float.IsFinite(stroke.Paint.StrokeWidth) && stroke.Paint.StrokeWidth > 1f
+                        && matrix.ScaleX == 1 && matrix.ScaleY == 1 && matrix.SkewX == 0 && matrix.SkewY == 0
+                        && matrix.Persp0 == 0 && matrix.Persp1 == 0 && matrix.Persp2 == 1;
+                    if (!useStrokeCache || !impl.TryDrawCachedStroke(Canvas, pen, stroke.Paint))
+                        Canvas.DrawPath(impl.StrokePath, stroke.Paint);
                 }
             }
         }
