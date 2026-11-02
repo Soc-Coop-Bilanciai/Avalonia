@@ -1,0 +1,376 @@
+{
+  "schemaVersion": 1,
+  "state": "qualified-unreleased-minimal-software-candidate",
+  "upstream": {
+    "tag": "12.1.5",
+    "commit": "5825bf8c66fba0c11e67c980d8ece6444576bffa"
+  },
+  "branch": "bilanciai/software-minimal-12.1.5",
+  "functionalSourceCommit": "6d20d22cad6dc3e5fc80be6ab26d1e265806fb76",
+  "dependencyBaseline": {
+    "SkiaSharp": "3.119.4",
+    "HarfBuzzSharp": "8.3.1.3",
+    "reason": "Keep the official 12.1.5 dependency versions; retire the historical Skia 4 upgrade and its conditional path-builder migration."
+  },
+  "runtimePolicy": {
+    "framebuffer": "upstream retained serial",
+    "frameRate": "upstream or application-owned",
+    "globalArmProfile": false,
+    "productionRasterProfiler": false,
+    "strokeCache": {
+      "enabledByDefault": true,
+      "diagnosticDisableEnvironment": "AVALONIA_STROKE_CACHE=0",
+      "targetQualification": "Three-replica Skia3 geometry benefit and eight real QA captures pass. Official3/final3 are pixel-exact for navigator, geometry and gradients in the captured viewport. No general text-performance gain."
+    }
+  },
+  "seriesDependencyValidation": "All seven ordered trees match source. Five of the original six commits are standalone clean; 008 textually requires 001; the seventh test-only commit textually requires 001 and 007 framebuffer cleanup, without 009 or 008.",
+  "series": [
+    {
+      "commit": "0e5dc8ae421bac922b635eb25a148edf3d54b9cc",
+      "patchIds": [
+        "BIL-AVA-009"
+      ],
+      "role": "independent UI text-layout allocation optimization",
+      "requiresEarlierSeriesCommits": []
+    },
+    {
+      "commit": "84613f03d4d0d9d5c02e2ec56efbc1a21170a29b",
+      "patchIds": [
+        "BIL-AVA-001",
+        "BIL-AVA-007"
+      ],
+      "role": "qualified software stroke cache with inseparable native-path lifetime guard",
+      "requiresEarlierSeriesCommits": []
+    },
+    {
+      "commit": "ec6cc08c764b2cbeac6be976fafb152274dc4011",
+      "patchIds": [
+        "BIL-AVA-007"
+      ],
+      "role": "independent framebuffer release on failed context creation",
+      "requiresEarlierSeriesCommits": []
+    },
+    {
+      "commit": "04930d18e61fe8b75965cdc43cb49cc7a6fa9602",
+      "patchIds": [
+        "BIL-AVA-002"
+      ],
+      "role": "regression tests only; retired mask approximation is not carried",
+      "requiresEarlierSeriesCommits": []
+    },
+    {
+      "commit": "bd8cb4dfe64e5dc603835177e654ef004574315b",
+      "patchIds": [
+        "BIL-AVA-010"
+      ],
+      "role": "independent carousel ownership and transition correctness",
+      "requiresEarlierSeriesCommits": []
+    },
+    {
+      "commit": "6d20d22cad6dc3e5fc80be6ab26d1e265806fb76",
+      "patchIds": [
+        "BIL-AVA-008"
+      ],
+      "role": "geometry-measurement cache invalidation only; no dependency or path-builder migration",
+      "requiresEarlierSeriesCommits": [
+        "84613f03d4d0d9d5c02e2ec56efbc1a21170a29b"
+      ]
+    },
+    {
+      "commit": "a3ecab8dfb3bebd8814f95d4b11250bddbff25c2",
+      "patchIds": [
+        "BIL-AVA-001",
+        "BIL-AVA-007"
+      ],
+      "role": "Three additional regression cases only; production/native binaries remain from functional source 6d20d22",
+      "testsOnly": true,
+      "requiresEarlierSeriesCommits": [
+        "84613f03d4d0d9d5c02e2ec56efbc1a21170a29b",
+        "ec6cc08c764b2cbeac6be976fafb152274dc4011"
+      ]
+    }
+  ],
+  "patches": [
+    {
+      "id": "BIL-AVA-001",
+      "status": "adapt",
+      "qualification": "18 frame runs and eight real pixel/raw QA captures pass; candidate3 retains official3 visible rendering",
+      "note": "Drawing-only cache; preserve native hairlines and unsupported contexts, upstream bounds and hit testing."
+    },
+    {
+      "id": "BIL-AVA-002",
+      "status": "retire",
+      "qualification": "eight Skia 3 fidelity cases pass",
+      "note": "Keep upstream image blur and eight shadow fidelity cases; retire mask substitution."
+    },
+    {
+      "id": "BIL-AVA-003",
+      "status": "retire",
+      "qualification": "historical mixed performance and nonzero pixel differences",
+      "note": "No full-frame tiled replay or fixed-halo prototype."
+    },
+    {
+      "id": "BIL-AVA-004",
+      "status": "retire",
+      "qualification": "diagnostics kept externally",
+      "note": "No production elapsed profiler; use the independent harness."
+    },
+    {
+      "id": "BIL-AVA-005",
+      "status": "retire",
+      "qualification": "policy separated from optimization",
+      "note": "No global ARM environment defaults, renderer self-test or FPS clamp."
+    },
+    {
+      "id": "BIL-AVA-006",
+      "status": "adapt",
+      "qualification": "metadata only",
+      "note": "Complete fork README, this manifest, patch index and short port guide; no publication infrastructure or blanket consumer AOT/trimming ban."
+    },
+    {
+      "id": "BIL-AVA-007",
+      "status": "adapt",
+      "qualification": "local Skia 3 lifetime and failure checks pass; cache target qualification follows 001",
+      "note": "Keep cache use/eviction lifetime with 001 and independent failed-context release; retire tile policy and shared timer cap."
+    },
+    {
+      "id": "BIL-AVA-008",
+      "status": "adapt",
+      "qualification": "local Skia 3 geometry-measurement regression passes",
+      "retiredComponents": [
+        "Skia 4 dependency upgrade",
+        "conditional immutable-path-builder migration"
+      ],
+      "note": "Keep only independent measurement invalidation; preserve official dependency versions and geometry/path construction."
+    },
+    {
+      "id": "BIL-AVA-009",
+      "status": "carry",
+      "qualification": "Three-block ABBA target microbenchmark passes in 12 fresh processes; seven CPU PNG/geometry hashes match and seven images were visually inspected; not a frame-rate claim",
+      "note": "Conservative TextBlock Measure/Arrange layout reuse; do not infer frame-rate gain."
+    },
+    {
+      "id": "BIL-AVA-010",
+      "status": "carry",
+      "qualification": "local focused Skia 3 correctness checks pass",
+      "note": "Independent carousel ownership/reinsertion and stale-transition cancellation."
+    },
+    {
+      "id": "BIL-AVA-011",
+      "status": "retire",
+      "qualification": "historical experiment excluded",
+      "note": "No experimental SHM backend, option, dispatcher or specific test."
+    }
+  ],
+  "qualification": {
+    "localSourceCommit": "6d20d22cad6dc3e5fc80be6ab26d1e265806fb76",
+    "framework": "net10.0",
+    "targetPerformanceAndVisual": "Complete: 3 smoke, 18 frame, 12 layout ABBA processes, eight real QA; owned session closed with no active jobs",
+    "nativeAotAndTrimming": "not qualified by this work",
+    "otherOperatingSystemsAndLegacyFrameworks": "not qualified by this work",
+    "localBuild": {
+      "completed": true,
+      "warnings": 0,
+      "errors": 0
+    },
+    "skiaTests": {
+      "passed": 622,
+      "skipped": 1,
+      "failed": 0
+    },
+    "focusedControlsTests": {
+      "passed": 141,
+      "failed": 0
+    },
+    "strictPublicApiComparisons": {
+      "passed": 38,
+      "failed": 0,
+      "suppressionFile": null,
+      "scope": "17 common-assembly comparisons to official3; 21 desktop comparisons to the unchanged-platform-source Skia4 migration reference"
+    },
+    "retiredFeatureAndConsumerPolicyChecks": {
+      "passed": 14,
+      "failed": 0
+    },
+    "officialSkiaDependencyFilesUnchanged": true,
+    "companionEvidence": "audit/build-minimal3/validation-summary.json",
+    "targetFramePerformance": {
+      "completedRuns": 18,
+      "replicasPerComparison": 3,
+      "allRunsPassed": true,
+      "independentRecomputationPassed": true,
+      "cohort": "software-minimal-stock3-clean-no-shm",
+      "companionEvidence": "software-minimal-audit/results-frame/frame-analysis.json",
+      "observedSceneOwnedStrokeCacheEntries": {
+        "geometry": [
+          24
+        ],
+        "text": [
+          0
+        ]
+      },
+      "scope": "Same-byte Skia3 cache A/B and whole Skia4 compatibility migration, including managed/API/native changes. Text ranges cross zero; no general frame-rate gain or display-scanout claim.",
+      "geometryCacheOnVsOff": {
+        "submittedFrameRate": {
+          "medianPct": 20.70404946576914,
+          "rangePct": [
+            17.480576648926128,
+            21.087399007646713
+          ]
+        },
+        "cpuCoreMsPerFrame": {
+          "medianPct": -13.34544213217913,
+          "rangePct": [
+            -14.351590920735758,
+            -9.711909711909716
+          ]
+        },
+        "clientPipelineP95": {
+          "medianPct": -11.71260749665597,
+          "rangePct": [
+            -14.00511674405548,
+            -8.544992864058331
+          ]
+        }
+      },
+      "textCacheOnVsOff": "All paired ranges cross neutral; zero scene-owned stroke-cache entries; no demonstrated gain.",
+      "wholeSkia4CompatibilityMigrationVsSkia3": {
+        "geometryMedianSubmittedFrameRatePct": -30.63286385607936,
+        "geometryMedianCpuCoreMsPerFramePct": 33.35769980506822,
+        "geometryMedianClientPipelineP95Pct": 23.982668926276673,
+        "text": "inconclusive; read raw paired ranges",
+        "includesManagedApiAndNativeChanges": true
+      }
+    },
+    "additionalRegressionTests": {
+      "testSourceCommit": "a3ecab8dfb3bebd8814f95d4b11250bddbff25c2",
+      "productionSourceCommit": "6d20d22cad6dc3e5fc80be6ab26d1e265806fb76",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "fullOriginalSuiteRerun": false,
+      "unchangedProductionNativeAndSupportBinaryHashes": 127,
+      "companionEvidence": "audit/additional-regression3/summary.json",
+      "scope": "Three cases run separately; original full suite remains 622 passed plus one skip at 6d20d22. No production/native outputs rebuilt."
+    },
+    "targetTextBlockMicrobenchmark": {
+      "passed": true,
+      "freshProcesses": 12,
+      "independentAbbaBlocks": 3,
+      "casesPerProcess": 7,
+      "controlsPerBatch": 1000,
+      "measuredBatchesPerCase": 5,
+      "eligibleCases": {
+        "equal-left": {
+          "wall": {
+            "medianPct": -6.987133449360517,
+            "rangePct": [
+              -9.992369121305522,
+              -6.820445112616835
+            ]
+          },
+          "threadAllocation": {
+            "medianPct": -11.816103516649335,
+            "rangePct": [
+              -11.816103516649335,
+              -11.785773411365952
+            ]
+          }
+        },
+        "left-rtl": {
+          "wall": {
+            "medianPct": -10.66301573188918,
+            "rangePct": [
+              -17.286645224072828,
+              -10.046084892683583
+            ]
+          },
+          "threadAllocation": {
+            "medianPct": -8.808719623499028,
+            "rangePct": [
+              -8.808719623499028,
+              -8.808719623499028
+            ]
+          }
+        },
+        "start-ltr": {
+          "wall": {
+            "medianPct": -8.335174646457677,
+            "rangePct": [
+              -10.759905922377389,
+              -6.121666828905092
+            ]
+          },
+          "threadAllocation": {
+            "medianPct": -11.816103516649335,
+            "rangePct": [
+              -11.816103516649335,
+              -11.816103516649335
+            ]
+          }
+        }
+      },
+      "fallbacks": "Four cases have unchanged thread allocations and wall-time ranges crossing neutral.",
+      "allSevenGeometryAndCpuPngHashesEqual": true,
+      "cpuPngImagesVisuallyInspected": 7,
+      "companionEvidence": "software-minimal-audit/results-layout/layout-analysis.json",
+      "inspectionEvidence": "software-minimal-audit/results-layout/CPU-PNG-INSPECTION.md",
+      "endpoint": "Construction, Measure and Arrange microbenchmark, not whole-application frame rate or physical scanout; three descriptive blocks, no significance claim."
+    },
+    "targetVisual": {
+      "realCaptures": 8,
+      "rawAndLoadedByteJoinPassed": true,
+      "allEightImagesInspected": true,
+      "official3VersusFinal3": {
+        "navigatorChangedPixels": 0,
+        "geometryChangedPixels": 0,
+        "gradientsChangedPixels": 0,
+        "maximumChannelError": 0
+      },
+      "scope": "Entire captured 1024x600 viewport only; observed content origin32,32, right/bottom32 client pixels offscreen",
+      "shadowSupplementAbsoluteY": [
+        92,
+        112
+      ],
+      "compatibility4Versus3": {
+        "navigatorChangedPixels": 8,
+        "navigatorMaximumError": 1,
+        "geometryChangedPixels": 91903,
+        "geometryMaximumError": 192,
+        "pixelEquivalent": false
+      },
+      "companionEvidence": "software-minimal-audit/visual-diffs-v2/pixel-comparisons.json",
+      "loadedByteEvidence": "software-minimal-audit/results-visual-qa/visual-raw-join.json"
+    },
+    "targetCleanup": {
+      "closedSessionId": "41f85e6c-9ee1-493e-ac77-4ee78f5181ad",
+      "activeJobsBeforeClose": [],
+      "closedAtUtc": "2026-11-02T22:34:01.269866+00:00",
+      "companionEvidence": "software-minimal-audit/rap/rotate-final-cleanup-state.json"
+    }
+  },
+  "applicationIntegration": {
+    "currentNextFramework": "not qualified by the independent renderer harness",
+    "constraint": "Current Svg.Controls.Skia.Avalonia 12.0.0.17 and Svg.Skia 5.2.3 declare managed/native Skia minimum 4.148.0. Ordinary dependency resolution may select Skia 4; Skia 3 app integration requires separate dependency selection and qualification.",
+    "Skia4": "optional separate compatibility reference, not the preferred minimal renderer baseline",
+    "cachedSkia3Option": {
+      "Svg.Controls.Skia.Avalonia": "12.0.0.13",
+      "Svg.Skia": "5.1.1",
+      "SkiaSharpMinimum": "3.119.2",
+      "qualification": "Local metadata/API-name candidate only; future application compile/render/lifetime qualification required. No application change made."
+    }
+  },
+  "preservedHistoricalSources": [
+    "acf6d55b741bd8362efe3865f01c5eebbe7288be",
+    "b666e9b428115c7e98d20d1f350eda926b9db53f",
+    "d8431f1fffb41a2bcc37852d568dd2b7fcbcda51",
+    "62493eb574305708a1051c56b8c14b1b689bc531"
+  ],
+  "optionalSkia4CompatibilityReference": {
+    "branch": "bilanciai/software-minimal-12.1.5-skia4",
+    "commit": "a026731c9007207c47f15e7db9f5799894b294e3",
+    "baseFunctionalCommit": "6d20d22cad6dc3e5fc80be6ab26d1e265806fb76",
+    "role": "Optional application SVG dependency compatibility reference; not the preferred renderer baseline. Separate integration qualification is required."
+  },
+  "sourceHeadIncludingAdditionalTests": "a3ecab8dfb3bebd8814f95d4b11250bddbff25c2"
+}
