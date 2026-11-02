@@ -214,6 +214,8 @@ namespace Avalonia.Skia
                 _pathCache.Dispose();
                 _pathCache = default;
                 ClearStrokeFills();
+                _cachedPathMeasure?.Dispose();
+                _cachedPathMeasure = null;
             }
         }
 
