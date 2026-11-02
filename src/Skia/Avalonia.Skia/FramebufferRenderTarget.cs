@@ -59,32 +59,40 @@ namespace Avalonia.Skia
             
             var framebuffer = _renderTarget.Lock(sceneInfo, out var lockProperties);
             
-            var framebufferImageInfo = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
-                framebuffer.Format.ToSkColorType(),
-                framebuffer.AlphaFormat.ToSkAlphaType());
-
-            CreateSurface(framebufferImageInfo, framebuffer);
-            _hadConversionShim |= _conversionShim != null;
-
-            var canvas = _framebufferSurface.Canvas;
-
-            canvas.RestoreToCount(-1);
-            canvas.Save();
-            canvas.ResetMatrix();
-
-            var createInfo = new DrawingContextImpl.CreateInfo
+            try
             {
-                Surface = _framebufferSurface,
-                Dpi = framebuffer.Dpi,
-                ScaleDrawingToDpi = _useScaledDrawing
-            };
+                var framebufferImageInfo = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
+                    framebuffer.Format.ToSkColorType(),
+                    framebuffer.AlphaFormat.ToSkAlphaType());
 
-            properties = new()
+                CreateSurface(framebufferImageInfo, framebuffer);
+                _hadConversionShim |= _conversionShim != null;
+
+                var canvas = _framebufferSurface.Canvas;
+
+                canvas.RestoreToCount(-1);
+                canvas.Save();
+                canvas.ResetMatrix();
+
+                var createInfo = new DrawingContextImpl.CreateInfo
+                {
+                    Surface = _framebufferSurface,
+                    Dpi = framebuffer.Dpi,
+                    ScaleDrawingToDpi = _useScaledDrawing
+                };
+
+                properties = new()
+                {
+                    PreviousFrameIsRetained = !_hadConversionShim && lockProperties.PreviousFrameIsRetained
+                };
+
+                return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
+            }
+            catch
             {
-                PreviousFrameIsRetained = !_hadConversionShim && lockProperties.PreviousFrameIsRetained
-            };
-            
-            return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
+                framebuffer.Dispose();
+                throw;
+            }
         }
         
 
