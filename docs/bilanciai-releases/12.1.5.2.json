@@ -1,0 +1,233 @@
+{
+  "version": "12.1.5.2",
+  "upstreamTag": "12.1.5",
+  "upstreamCommit": "5825bf8c66fba0c11e67c980d8ece6444576bffa",
+  "qualifiedCommit": "8f3564635b025908710dbe963e9f2e3ac7abf9b9",
+  "forkCommit": "3e30dc3310bf8fef3a3899f7946537a70c3fd014",
+  "repositoryUrl": "https://github.com/Soc-Coop-Bilanciai/Avalonia",
+  "patches": [
+    {
+      "commit": "0e5dc8ae421bac922b635eb25a148edf3d54b9cc",
+      "ids": [
+        "BIL-AVA-009"
+      ]
+    },
+    {
+      "commit": "84613f03d4d0d9d5c02e2ec56efbc1a21170a29b",
+      "ids": [
+        "BIL-AVA-001",
+        "BIL-AVA-007"
+      ]
+    },
+    {
+      "commit": "ec6cc08c764b2cbeac6be976fafb152274dc4011",
+      "ids": [
+        "BIL-AVA-007"
+      ]
+    },
+    {
+      "commit": "04930d18e61fe8b75965cdc43cb49cc7a6fa9602",
+      "ids": [
+        "BIL-AVA-002"
+      ]
+    },
+    {
+      "commit": "bd8cb4dfe64e5dc603835177e654ef004574315b",
+      "ids": [
+        "BIL-AVA-010"
+      ]
+    },
+    {
+      "commit": "6d20d22cad6dc3e5fc80be6ab26d1e265806fb76",
+      "ids": [
+        "BIL-AVA-008"
+      ]
+    },
+    {
+      "commit": "a3ecab8dfb3bebd8814f95d4b11250bddbff25c2",
+      "ids": [
+        "BIL-AVA-001",
+        "BIL-AVA-007"
+      ]
+    },
+    {
+      "commit": "8f3564635b025908710dbe963e9f2e3ac7abf9b9",
+      "ids": [
+        "BIL-AVA-006"
+      ]
+    },
+    {
+      "commit": "811e903b5d7ed8003b1d5c676a08c497a86f3dad",
+      "ids": [
+        "BIL-AVA-006"
+      ]
+    },
+    {
+      "commit": "33ad1601d2b2561d08f084eff4ca92af967a552f",
+      "ids": [
+        "BIL-AVA-006"
+      ]
+    },
+    {
+      "commit": "f77959b2d5f6d656d727111651183461ae86ac76",
+      "ids": [
+        "BIL-AVA-006"
+      ]
+    },
+    {
+      "commit": "4c71e882586f2ed50facf267fe1144d33c8cf63f",
+      "ids": [
+        "BIL-AVA-006"
+      ]
+    },
+    {
+      "commit": "3e30dc3310bf8fef3a3899f7946537a70c3fd014",
+      "ids": [
+        "BIL-AVA-006"
+      ]
+    }
+  ],
+  "nativeInput": {
+    "url": "https://api.nuget.org/v3-flatcontainer/avalonia.native/12.1.5/avalonia.native.12.1.5.nupkg",
+    "sha256": "8AA1DD5791FEE127607E092C543992618F45B44695262F0053BE0F36FB589EAF",
+    "dylibSha256": "BE066394A085CF72DEBFBE93084479B10AE5A3715175D30C23A73CE8C3DB034F"
+  },
+  "bunInput": {
+    "version": "1.3.4",
+    "executableSha256": "300C47285AAE4175C840128055C1ADD37BA3690B82B15C81F1A289F6530789B9"
+  },
+  "packages": [
+    {
+      "id": "Avalonia",
+      "version": "12.1.5.2",
+      "file": "Avalonia.12.1.5.2.nupkg",
+      "sha256": "C91211238A1B55DEE4D1E9C7900BB021F5D21019CD604D996678AF92FAD48261"
+    },
+    {
+      "id": "Avalonia.Controls.ColorPicker",
+      "version": "12.1.5.2",
+      "file": "Avalonia.Controls.ColorPicker.12.1.5.2.nupkg",
+      "sha256": "7D877E5EF47C483DECF235E228A3FDA9D937857AB805886AF5F394F122404111"
+    },
+    {
+      "id": "Avalonia.Desktop",
+      "version": "12.1.5.2",
+      "file": "Avalonia.Desktop.12.1.5.2.nupkg",
+      "sha256": "C3F46CF505A46C8A5FAA10439B7F96D62C000B93D16801409F1FDB5D237B0B62"
+    },
+    {
+      "id": "Avalonia.Fonts.Inter",
+      "version": "12.1.5.2",
+      "file": "Avalonia.Fonts.Inter.12.1.5.2.nupkg",
+      "sha256": "EEA055991E4F73002BDD4FE9BDE73A50F704A28F4967C9A06D0BFE5CD0480D70"
+    },
+    {
+      "id": "Avalonia.FreeDesktop",
+      "version": "12.1.5.2",
+      "file": "Avalonia.FreeDesktop.12.1.5.2.nupkg",
+      "sha256": "DCE5E0F1603B081F48FC8C4D0B9F23C03C3082392A31B36E18D35489C7B972EE"
+    },
+    {
+      "id": "Avalonia.FreeDesktop.AtSpi",
+      "version": "12.1.5.2",
+      "file": "Avalonia.FreeDesktop.AtSpi.12.1.5.2.nupkg",
+      "sha256": "8E2F418F395CA067476F15F8812F134E8E33E4A59659B08BCC49FCA4A0A511E6"
+    },
+    {
+      "id": "Avalonia.HarfBuzz",
+      "version": "12.1.5.2",
+      "file": "Avalonia.HarfBuzz.12.1.5.2.nupkg",
+      "sha256": "9C3B0585836977771647EE64EE4CE527F23B4CABAE47A3FFAFF1D54106A6C7D9"
+    },
+    {
+      "id": "Avalonia.Headless",
+      "version": "12.1.5.2",
+      "file": "Avalonia.Headless.12.1.5.2.nupkg",
+      "sha256": "892361F7E92B19154733D03757CCE37DFB77B2D00B572176BC3B3BD250C65C00"
+    },
+    {
+      "id": "Avalonia.Headless.NUnit",
+      "version": "12.1.5.2",
+      "file": "Avalonia.Headless.NUnit.12.1.5.2.nupkg",
+      "sha256": "679FE8CBDB77EAEA77013B1B6495A0907C9E9337564C149C214AB53977A94212"
+    },
+    {
+      "id": "Avalonia.Headless.Vnc",
+      "version": "12.1.5.2",
+      "file": "Avalonia.Headless.Vnc.12.1.5.2.nupkg",
+      "sha256": "F532A623D0843069C5347352042B9EE3B2DC2D90E2C84246F8AB1B801E562A0A"
+    },
+    {
+      "id": "Avalonia.Headless.XUnit",
+      "version": "12.1.5.2",
+      "file": "Avalonia.Headless.XUnit.12.1.5.2.nupkg",
+      "sha256": "1F1D7A7B6C5BBFADAAED1F8915764F340A17DE3C3A41FFB90D9FA5C28CE1AE68"
+    },
+    {
+      "id": "Avalonia.LinuxFramebuffer",
+      "version": "12.1.5.2",
+      "file": "Avalonia.LinuxFramebuffer.12.1.5.2.nupkg",
+      "sha256": "1B4CC11D184F8E99ED6774EDE8373BBE8A4A9CBFF2DDD1D7E9E89833F9D2936D"
+    },
+    {
+      "id": "Avalonia.Markup.Xaml.Loader",
+      "version": "12.1.5.2",
+      "file": "Avalonia.Markup.Xaml.Loader.12.1.5.2.nupkg",
+      "sha256": "8D1FE9D6358A5EDE22B940265D589367F9A56BFB2AEF72D60D4B52E45DEEB7DA"
+    },
+    {
+      "id": "Avalonia.Native",
+      "version": "12.1.5.2",
+      "file": "Avalonia.Native.12.1.5.2.nupkg",
+      "sha256": "7A4DD1DDE3ACCDC219E66E9D837E4F11422004631453D5D6E19129B0DCBBB7EE"
+    },
+    {
+      "id": "Avalonia.Remote.Protocol",
+      "version": "12.1.5.2",
+      "file": "Avalonia.Remote.Protocol.12.1.5.2.nupkg",
+      "sha256": "FD9FD24040544F89D405DF95DE2C3AB4507836B550C6BBA6B21BD7C64CD00D5F"
+    },
+    {
+      "id": "Avalonia.Skia",
+      "version": "12.1.5.2",
+      "file": "Avalonia.Skia.12.1.5.2.nupkg",
+      "sha256": "D63B506480DA54CBA91C9D9114DCFCBDFEF30F8C05DF8FF80506532A5CAB20D8"
+    },
+    {
+      "id": "Avalonia.Themes.Fluent",
+      "version": "12.1.5.2",
+      "file": "Avalonia.Themes.Fluent.12.1.5.2.nupkg",
+      "sha256": "4FEC6A35752A212187422A42C7ED8E48C4162006D42B132CE4C8986D6E552038"
+    },
+    {
+      "id": "Avalonia.Themes.Simple",
+      "version": "12.1.5.2",
+      "file": "Avalonia.Themes.Simple.12.1.5.2.nupkg",
+      "sha256": "00E6B06EDA4EAA2DE945D953A81FC2F8FE9CF34138D5A4837B56FB6C92C4C297"
+    },
+    {
+      "id": "Avalonia.Wayland",
+      "version": "12.1.5.2",
+      "file": "Avalonia.Wayland.12.1.5.2.nupkg",
+      "sha256": "527D9B603BBC0904BC31EBB8E49A79E0AEFAAB2E80858B2C80BEEBC5F1F1D859"
+    },
+    {
+      "id": "Avalonia.Win32",
+      "version": "12.1.5.2",
+      "file": "Avalonia.Win32.12.1.5.2.nupkg",
+      "sha256": "1D9A57DDA71DCDE973460576CBE1F2EC3B6C8352F14834C5F4B06FF108A280AB"
+    },
+    {
+      "id": "Avalonia.Win32.Interoperability",
+      "version": "12.1.5.2",
+      "file": "Avalonia.Win32.Interoperability.12.1.5.2.nupkg",
+      "sha256": "A15624A7632338AA0242B9F0BCD02D8266349E55DF156B2FAB4235365D126117"
+    },
+    {
+      "id": "Avalonia.X11",
+      "version": "12.1.5.2",
+      "file": "Avalonia.X11.12.1.5.2.nupkg",
+      "sha256": "97524E5556ECC7009C3AAE100B213F69A780DF89881BC5650E16E693C67ACE8E"
+    }
+  ]
+}

@@ -4,8 +4,9 @@
 [Bilanciai fork](https://github.com/Soc-Coop-Bilanciai/Avalonia).
 It restores the official README and separates English patch, qualification,
 distribution and porting guides. Runtime and dependency inputs are unchanged.
-The release tag and generated manifest identify the exact packaged source;
-confirm feed availability before restoring consumers.
+Release tag `bilanciai/12.1.5.2` identifies packaged source
+`3e30dc3310bf8fef3a3899f7946537a70c3fd014`. The
+[archived manifest](bilanciai-releases/12.1.5.2.json) records all package hashes.
 
 Previous immutable tag `bilanciai/12.1.5.1` identifies
 `f77959b2d5f6d656d727111651183461ae86ac76`. The downloaded Avalonia 12.1.5.1
@@ -160,3 +161,21 @@ must still establish the versions actually selected.
 bytes and harness. Packaging, restore and consumer compilation add no hardware
 measurements and do not establish application-wide SHM absence or pixel parity
 across every screen.
+
+## Publication verification
+
+All **22 packages at 12.1.5.2** were published to the existing corporate feed
+on **2026-11-03**. A fresh-cache download with HTTP cache disabled confirmed
+every package's private-feed origin and SHA-256 against the archived manifest.
+The official packaging pipeline completed for net8.0/net10.0; **89 lib/ref
+assembly identities** (name, version, culture and signing token) match the
+corresponding 12.1.5.1 assemblies, including upstream signing exceptions.
+The driver also verified cohort dependencies, source metadata, official macOS
+native bytes and Bun provenance.
+
+This release changes documentation and package revision, not the qualified
+runtime/dependency inputs. Unit suites, hardware measurements and complete
+consumer build/runtime acceptance were not repeated. NextFramework's SVG
+constraint still requires separate dependency selection and qualification.
+Only manifest `.nupkg` files were uploaded; symbol packages were not published.
+Later publication-record commits do not change the immutable tag or package bytes.

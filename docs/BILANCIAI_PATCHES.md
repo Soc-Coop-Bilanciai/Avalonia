@@ -80,12 +80,16 @@ rendering performance.
 | `811e903b5d7ed8003b1d5c676a08c497a86f3dad` | 006 | Desktop selector/driver, distribution metadata and designer build integration. |
 | `33ad1601d2b2561d08f084eff4ca92af967a552f` | 006 | Distribution/consumer documentation; use the current English guides when porting. |
 | `f77959b2d5f6d656d727111651183461ae86ac76` | 006 | Preserve prepared designer dependencies during Clean; update NUKE parameter schema. |
+| `4c71e882586f2ed50facf267fe1144d33c8cf63f` | 006 | Restore the official README; separate concise English patch, qualification, distribution and porting guides. |
+| `3e30dc3310bf8fef3a3899f7946537a70c3fd014` | 006 | Prepare immutable revision 12.1.5.2 and align consumer version properties. |
 
 The immutable tag `bilanciai/12.1.5.1` points to `f77959b2d`. Later documentation
 does not change its package bytes or benchmark provenance. Revision 12.1.5.2
 packages the documentation correction with unchanged qualified runtime inputs.
-For the next stable,
-replay selected runtime/tests, adapt packaging separately, and update these
+Its tag points to `3e30dc331`; the
+[release manifest](bilanciai-releases/12.1.5.2.json) preserves exact package hashes.
+Later publication-record commits share ID 006 and do not alter released bytes.
+For the next stable, replay selected runtime/tests, adapt packaging separately, and update these
 guides without replacing the new upstream README. Do not cherry-pick the entire
 historical fork. Keep exact release/package hashes in generated manifests.
 
