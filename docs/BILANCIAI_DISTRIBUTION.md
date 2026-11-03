@@ -1,51 +1,50 @@
-# Distribuzione desktop Bilanciai 12.1.5.1
+# Bilanciai desktop distribution 12.1.5.1
 
-La distribuzione prevista è **12.1.5.1**, dal ramo `bilanciai/12.1.5` del
-[fork aziendale](https://github.com/Soc-Coop-Bilanciai/Avalonia). Questa guida
-descrive preparazione, packaging e consumo; non attesta che la versione sia già
-pubblicata. Verificare la disponibilità sul feed prima del restore dei consumer.
+**12.1.5.1 is the planned release** from `bilanciai/12.1.5` in the
+[Bilanciai fork](https://github.com/Soc-Coop-Bilanciai/Avalonia).
+Tag `bilanciai/12.1.5.1` identifies source commit
+`f77959b2d5f6d656d727111651183461ae86ac76`. The tag does not establish feed
+publication; confirm availability before restoring consumers.
 
-Il sorgente qualificato è `8f3564635b025908710dbe963e9f2e3ac7abf9b9`, basato sul
-tag ufficiale **12.1.5**, commit `5825bf8c66fba0c11e67c980d8ece6444576bffa`.
-Il runtime misurato resta `6d20d22cad6dc3e5fc80be6ab26d1e265806fb76`; i commit
-successivi di test, documentazione e packaging non sono una nuova qualifica
-prestazionale. Per ambito e limiti delle prove vedere [README](../readme.md) e
-[registro patch](BILANCIAI_PATCHES.md).
+The qualified source is `8f3564635b025908710dbe963e9f2e3ac7abf9b9`, based on
+official tag **12.1.5**, commit `5825bf8c66fba0c11e67c980d8ece6444576bffa`.
+The measured runtime remains `6d20d22cad6dc3e5fc80be6ab26d1e265806fb76`;
+later test, documentation and packaging commits add no performance qualification.
+See [qualification evidence](BILANCIAI_QUALIFICATION.md) and the
+[patch register](BILANCIAI_PATCHES.md) for scope and limits.
 
-## Versioni e perimetro
+## Version and scope
 
-Il [manifest di distribuzione](../build/Bilanciai/distribution.json) definisce
-base, commit qualificato, revisione, repository e feed esistente:
+[distribution.json](../build/Bilanciai/distribution.json) owns the upstream
+base, qualified commit, revision, repository and existing feed:
+`https://artifacts.coopbilanciai.it/nuget/v3/index.json`.
 
-`https://artifacts.coopbilanciai.it/nuget/v3/index.json`
+The driver overrides only **PackageVersion = 12.1.5.1**. Upstream `Version`
+and assembly identities remain unchanged: normally **12.1.5.0**, with the
+intentional **DesignerSupport 0.7.0.0** exception. Do not supply global
+`Version`, `AssemblyVersion` or `FileVersion` overrides. Package repository
+metadata and the generated manifest must identify the actual final packaged
+commit; the tagged source alone does not prove which bytes were published.
 
-Il driver imposta solo **PackageVersion = 12.1.5.1**. `Version` e identità
-assembly restano quelle ufficiali: normalmente **12.1.5.0**, con l'eccezione
-intenzionale **DesignerSupport 0.7.0.0**. Non passare override globali di
-`Version`, `AssemblyVersion` o `FileVersion`. Repository e commit nei pacchetti
-devono identificare il commit finale realmente impacchettato, registrato nel
-manifest generato, senza inventare qui il suo SHA futuro.
+Keep upstream **SkiaSharp/native assets 3.119.4**, **HarfBuzzSharp/native
+assets 8.3.1.3**, target frameworks, assembly signing and AOT/trimming policies.
+The previous fork's SHM, tiles, ARM profiles, profiler and FPS cap are not
+restored. The desktop traversal excludes Browser, Android, iOS, WinUI and
+SingleProject. Inclusion in a package does not qualify every desktop OS or
+target framework at runtime.
 
-Restano **SkiaSharp e asset nativi 3.119.4**, **HarfBuzzSharp e asset nativi
-8.3.1.3**, i framework target, la firma assembly e le policy AOT/trimming
-ufficiali. Non vengono ripristinati SHM, tile, profili ARM, profiler o cap FPS
-del vecchio fork. Browser, Android, iOS, WinUI e SingleProject sono esclusi dalla
-traversal desktop; questo non costituisce una qualifica runtime di ogni OS
-desktop o di ogni framework target incluso nei pacchetti.
+## Build packages
 
-## Creare i pacchetti
+Requirements: PowerShell 7, the SDK selected by `global.json`, populated pinned
+submodules, clean committed release sources, existing approved restore sources,
+a prepared NuGet cache and Bun **1.3.4**. The driver verifies Bun's SHA-256 and
+fails if the binary is missing or different; it installs no tools.
 
-Prerequisiti: PowerShell 7, SDK conforme a `global.json`, submodule fissati e
-popolati, sorgenti di rilascio committati e puliti, restore dalle sorgenti
-approvate esistenti, cache NuGet preparata e Bun **1.3.4** già disponibile.
-Il driver verifica il binario Bun tramite SHA-256; se manca o non corrisponde
-si ferma, senza installare strumenti.
-
-Dalla radice del repository, impostare esplicitamente la cache esistente e
-avviare il driver in un processo senza la chiave di pubblicazione:
+From the repository root, select the existing cache and launch the driver
+without the publication key:
 
 ```powershell
-$env:NUGET_PACKAGES = 'C:/Users/f.ruscelli/.nuget/packages' # cache esistente approvata
+$env:NUGET_PACKAGES = 'C:/Users/f.ruscelli/.nuget/packages' # existing approved cache
 $child = [Diagnostics.ProcessStartInfo]::new('pwsh')
 $child.UseShellExecute = $false
 $child.WorkingDirectory = (Get-Location).Path
@@ -55,107 +54,104 @@ foreach ($argument in @('-NoProfile', '-File', 'build/Bilanciai/Pack.ps1')) {
 }
 $process = [Diagnostics.Process]::Start($child)
 $process.WaitForExit()
-if ($process.ExitCode -ne 0) { throw "Packaging fallito: $($process.ExitCode)" }
+if ($process.ExitCode -ne 0) { throw "Packaging failed: $($process.ExitCode)" }
 ```
 
-Il percorso Bun predefinito è
+The default Bun path is
 `$env:NUGET_PACKAGES/bun.unofficial.tool.win-x64/1.3.4/tools/any/win-x64/bun.exe`.
-Per indicare esplicitamente lo stesso binario verificato, aggiungere agli
-argomenti del processo `-BunExecutablePath` e il suo percorso assoluto.
-`NUGET_PACKAGES` resta richiesto anche con l'override. La build degli asset
-Designer rimane attiva; fuori dalla modalità desktop Bilanciai il comando Bun
-upstream conserva il proprio default `dnx`.
+To select the same verified binary explicitly, append `-BunExecutablePath`
+and its absolute path to the child arguments. `NUGET_PACKAGES` remains
+required with this override. Designer asset compilation stays enabled;
+outside Bilanciai desktop mode, upstream Bun execution keeps its `dnx` default.
 
-[Pack.ps1](../build/Bilanciai/Pack.ps1) richiede la base corretta, storia lineare,
-trailer `Bilanciai-Patch` validi e sorgenti puliti; controlla inoltre che runtime
-e dipendenze qualificati non cambino. Invoca il target ufficiale
-`CreateNugetPackages` in Release con `--bilanciai-desktop` e
-`--force-nuget-version 12.1.5.1`, attraverso
-[Desktop.proj](../build/Bilanciai/Desktop.proj). Restano patch dei build task,
-merge Numerge e generazione delle reference assembly ufficiali: non basta
-eseguire `dotnet pack` su un solo progetto.
+[Pack.ps1](../build/Bilanciai/Pack.ps1) requires the matching base, linear
+history, valid `Bilanciai-Patch` trailers and clean sources. It rejects changes
+to the qualified runtime/dependency inputs. It invokes the official
+`CreateNugetPackages` target in Release with `--bilanciai-desktop` and
+`--force-nuget-version 12.1.5.1`, using
+[Desktop.proj](../build/Bilanciai/Desktop.proj). Official build-task patching,
+Numerge merging and reference-assembly generation remain required; packing
+one project with `dotnet pack` does not produce the distribution.
 
-Per macOS si riusa esclusivamente il binario della **Avalonia.Native ufficiale
-12.1.5**. Il driver legge
-`build-intermediate/bilanciai-native/avalonia.native.12.1.5.nupkg`, scaricando
-l'archivio ufficiale solo se assente; verifica ID/versione del nuspec ed estrae
-`runtimes/osx/native/libAvaloniaNative.dylib`. Registra gli hash di archivio e
-dylib e confronta il binario nel pacchetto finale. Un archivio 12.1.4 non è un
-sostituto valido. Il driver rifiuta differenze nei sorgenti nativi rispetto alla
-base ufficiale; il riuso non è una nuova build o qualifica macOS.
+For macOS, reuse only the binary from official **Avalonia.Native 12.1.5**.
+The driver reads
+`build-intermediate/bilanciai-native/avalonia.native.12.1.5.nupkg`, downloading
+the official archive only when absent. It verifies nuspec ID/version, extracts
+`runtimes/osx/native/libAvaloniaNative.dylib`, records archive/dylib hashes and
+compares the final packaged binary. A 12.1.4 archive is invalid. Native-source
+differences from upstream are rejected. Reuse is neither a native rebuild nor
+macOS runtime qualification.
 
-L'output da distribuire è **`artifacts/nuget`**, dopo il merge ufficiale, con
-`bilanciai-release.json`: versione, commit upstream/qualificato/finale, patch ID,
-provenienza nativa, Bun e inventario ID/versioni/SHA-256 dei pacchetti. Non
-distribuire `build-intermediate/nuget`. Il successo del comando indica creazione
-e controlli del driver, non upload o compatibilità applicativa già dimostrata.
-Non viene aggiunto un publisher né modificato il feed o le sue credenziali.
+Distribute **`artifacts/nuget`**, after the official merge, with
+`bilanciai-release.json`: version, upstream/qualified/final commits, patch IDs,
+native and Bun provenance, and package ID/version/SHA-256 inventory. Do not
+distribute `build-intermediate/nuget`. Driver success establishes package
+creation and its checks, not upload or application compatibility. No publisher
+is added, and feed configuration/credentials are unchanged.
 
-## Coorte desktop e dipendenze consumer
+## Desktop cohort and consumer dependencies
 
-Il driver richiede **22 pacchetti desktop finali**, tutti a **12.1.5.1**. I due
-grafi NextFramework e ScreenKeyboard richiedono questi **17** ID:
+The driver requires **22 final desktop packages**, all at **12.1.5.1**.
+The inspected NextFramework and ScreenKeyboard graphs require **17** IDs:
 
-| Gruppo | Pacchetti |
+| Group | Packages |
 | --- | --- |
-| Runtime, 12 ID | `Avalonia`, `Avalonia.Controls.ColorPicker`, `Avalonia.Desktop`, `Avalonia.FreeDesktop`, `Avalonia.FreeDesktop.AtSpi`, `Avalonia.HarfBuzz`, `Avalonia.LinuxFramebuffer`, `Avalonia.Native`, `Avalonia.Remote.Protocol`, `Avalonia.Skia`, `Avalonia.Win32`, `Avalonia.X11` |
-| Preview, benchmark e test, altri 5 ID | `Avalonia.Headless`, `Avalonia.Markup.Xaml.Loader`, `Avalonia.Fonts.Inter`, `Avalonia.Wayland`, `Avalonia.Themes.Fluent` |
-| Altri 5 della coorte desktop completa | `Avalonia.Win32.Interoperability`, `Avalonia.Headless.XUnit`, `Avalonia.Headless.NUnit`, `Avalonia.Headless.Vnc`, `Avalonia.Themes.Simple` |
+| Runtime: 12 IDs | `Avalonia`, `Avalonia.Controls.ColorPicker`, `Avalonia.Desktop`, `Avalonia.FreeDesktop`, `Avalonia.FreeDesktop.AtSpi`, `Avalonia.HarfBuzz`, `Avalonia.LinuxFramebuffer`, `Avalonia.Native`, `Avalonia.Remote.Protocol`, `Avalonia.Skia`, `Avalonia.Win32`, `Avalonia.X11` |
+| Preview, benchmarks and tests: 5 more IDs | `Avalonia.Headless`, `Avalonia.Markup.Xaml.Loader`, `Avalonia.Fonts.Inter`, `Avalonia.Wayland`, `Avalonia.Themes.Fluent` |
+| Remaining 5 desktop cohort IDs | `Avalonia.Win32.Interoperability`, `Avalonia.Headless.XUnit`, `Avalonia.Headless.NUnit`, `Avalonia.Headless.Vnc`, `Avalonia.Themes.Simple` |
 
-I pacchetti intermedi core, build task, analyzer e generatori confluiscono nei
-pacchetti finali secondo le regole upstream. Non pubblicarli separatamente per
-completare artificialmente l'inventario. I riferimenti interni alla coorte
-devono restare coerenti alla stessa versione; le dipendenze indipendenti
-mantengono le proprie versioni, fra cui `Avalonia.BuildServices` **11.3.2** e
-`Avalonia.Angle.Windows.Natives` **2.1.27548.20260419**. DataGrid e librerie SVG
-consumer non vengono ricostruiti da questo rilascio.
+Intermediate core, build-task, analyzer and generator packages merge into final
+packages under upstream rules; do not publish them separately to fill the
+inventory. Internal cohort references must use the same fork version.
+Independent dependencies keep their versions, including `Avalonia.BuildServices`
+**11.3.2** and `Avalonia.Angle.Windows.Natives` **2.1.27548.20260419**.
+This release does not rebuild DataGrid or consumer SVG libraries.
 
-## Usare 12.1.5.1 in NextFramework e ScreenKeyboard
+## Consume in NextFramework and ScreenKeyboard
 
-Dopo la conferma di pubblicazione, usare il feed aziendale già configurato e i
-suoi mapping esistenti. Non aggiungere credenziali nei progetti o nei comandi.
-I pattern `Avalonia.*` possono instradare anche dipendenze indipendenti: un
-restore riuscito dalla vecchia cache non dimostra la disponibilità sul feed.
-Verificare un restore con cache isolata e controllare gli asset effettivi.
+After publication is confirmed, use the existing corporate feed and source
+mappings. Keep credentials out of projects and commands. `Avalonia.*` mappings
+can also route independent dependencies; a successful restore from the old
+cache does not establish feed availability. Restore into an isolated cache
+and inspect the selected assets.
 
-Nei consumer correnti, passare queste proprietà **sia al restore sia a build,
-test o publish** del relativo progetto:
+Pass these properties to **restore and every build, test or publish**:
 
 ```text
 NextFramework:  -p:AvaloniaUpstreamVersion=12.1.5 -p:AvaloniaForkRevision=1
 ScreenKeyboard: -p:AvaloniaPackageVersion=12.1.5.1
 ```
 
-Esempio dalla radice del consumer, con progetto e configurazione approvata:
+From the consumer root, using the intended project and approved configuration:
 
 ```powershell
 dotnet restore $consumerProject --configfile $approvedConfig @versionProperties
 dotnet build $consumerProject -c Release --no-restore @versionProperties
 ```
 
-`$versionProperties` è l'array delle proprietà del consumer indicato sopra;
-usare output e cache separati per confronti diversi. Dopo restore verificare
-`project.assets.json`, versioni di tutti i pacchetti fork e asset nativi per il
-RID scelto. Per `linux-arm64` eseguire un restore specifico per il RID prima del
-publish; una build generica non ne dimostra la closure.
+`$versionProperties` is the corresponding consumer property array above.
+Use separate outputs and caches for comparisons. Inspect `project.assets.json`,
+all fork package versions and native assets for the chosen RID. Restore
+specifically for `linux-arm64` before publishing that RID; a generic build
+does not establish its dependency closure.
 
-**NextFramework ha un vincolo SVG indipendente:**
-`Svg.Controls.Skia.Avalonia` **12.0.0.17** → `Svg.Skia` **5.2.3** richiede Skia
-managed/native almeno **4.148.0** e HarfBuzz **14.2.0**. Il solo aggiornamento
-Avalonia a 12.1.5.1 può quindi selezionare Skia 4. Un suo build riuscito non
-dimostra consumo del renderer qualificato con Skia 3. Non sopprimere `NU1605`
-e non forzare versioni sotto i requisiti delle librerie SVG.
+**NextFramework has an independent SVG constraint:**
+`Svg.Controls.Skia.Avalonia` **12.0.0.17** → `Svg.Skia` **5.2.3** requires
+managed/native Skia **4.148.0** or newer and HarfBuzz **14.2.0**. Updating
+Avalonia alone can therefore select Skia 4. A successful build does not prove
+use of the renderer qualified with Skia 3. Do not suppress `NU1605` or force
+versions below SVG dependency requirements.
 
-La coppia `Svg.Controls.Skia.Avalonia` **12.0.0.13** / `Svg.Skia` **5.1.1**
-permette Skia **3.119.4** e HarfBuzz **8.3.1.3** come vincoli di dipendenza.
-È una candidata per validazione separata di API, build, render e lifetime
-dell'applicazione; non una compatibilità già certificata o una modifica
-automatica di NextFramework. La variante sperimentale Skia 4 non fa parte di
-questa distribuzione. ScreenKeyboard non presenta lo stesso requisito SVG
-nel grafo ispezionato, ma anche il suo restore e i suoi test devono provare
-le versioni realmente selezionate.
+`Svg.Controls.Skia.Avalonia` **12.0.0.13** / `Svg.Skia` **5.1.1** allows
+Skia **3.119.4** (declared minimum **3.119.2**) and HarfBuzz **8.3.1.3** at
+the dependency level. This pair
+is a candidate for separate application API, build, rendering and lifetime
+validation, not certified compatibility or an automatic NextFramework change.
+The experimental Skia 4 variant is outside this distribution. The inspected
+ScreenKeyboard graph has no equivalent SVG requirement; its restore and tests
+must still establish the versions actually selected.
 
-I risultati del renderer nel README rimangono riferiti ai byte e all'harness
-qualificati. Packaging, restore e compilazione dei consumer non attestano
-nuove misure hardware, assenza di SHM nell'intera applicazione o parità pixel
-di tutte le sue schermate.
+[Renderer evidence](BILANCIAI_QUALIFICATION.md) applies only to the qualified
+bytes and harness. Packaging, restore and consumer compilation add no hardware
+measurements and do not establish application-wide SHM absence or pixel parity
+across every screen.
