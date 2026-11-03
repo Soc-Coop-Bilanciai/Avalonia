@@ -1,10 +1,15 @@
-# Bilanciai desktop distribution 12.1.5.1
+# Bilanciai desktop distribution 12.1.5.2
 
-**12.1.5.1 is the planned release** from `bilanciai/12.1.5` in the
+**12.1.5.2 is the release version** from `bilanciai/12.1.5` in the
 [Bilanciai fork](https://github.com/Soc-Coop-Bilanciai/Avalonia).
-Tag `bilanciai/12.1.5.1` identifies source commit
-`f77959b2d5f6d656d727111651183461ae86ac76`. The tag does not establish feed
-publication; confirm availability before restoring consumers.
+It restores the official README and separates English patch, qualification,
+distribution and porting guides. Runtime and dependency inputs are unchanged.
+The release tag and generated manifest identify the exact packaged source;
+confirm feed availability before restoring consumers.
+
+Previous immutable tag `bilanciai/12.1.5.1` identifies
+`f77959b2d5f6d656d727111651183461ae86ac76`. The downloaded Avalonia 12.1.5.1
+package records that same source. Do not replace its tag or package bytes.
 
 The qualified source is `8f3564635b025908710dbe963e9f2e3ac7abf9b9`, based on
 official tag **12.1.5**, commit `5825bf8c66fba0c11e67c980d8ece6444576bffa`.
@@ -19,7 +24,7 @@ See [qualification evidence](BILANCIAI_QUALIFICATION.md) and the
 base, qualified commit, revision, repository and existing feed:
 `https://artifacts.coopbilanciai.it/nuget/v3/index.json`.
 
-The driver overrides only **PackageVersion = 12.1.5.1**. Upstream `Version`
+The driver overrides only **PackageVersion = 12.1.5.2**. Upstream `Version`
 and assembly identities remain unchanged: normally **12.1.5.0**, with the
 intentional **DesignerSupport 0.7.0.0** exception. Do not supply global
 `Version`, `AssemblyVersion` or `FileVersion` overrides. Package repository
@@ -68,7 +73,7 @@ outside Bilanciai desktop mode, upstream Bun execution keeps its `dnx` default.
 history, valid `Bilanciai-Patch` trailers and clean sources. It rejects changes
 to the qualified runtime/dependency inputs. It invokes the official
 `CreateNugetPackages` target in Release with `--bilanciai-desktop` and
-`--force-nuget-version 12.1.5.1`, using
+`--force-nuget-version 12.1.5.2`, using
 [Desktop.proj](../build/Bilanciai/Desktop.proj). Official build-task patching,
 Numerge merging and reference-assembly generation remain required; packing
 one project with `dotnet pack` does not produce the distribution.
@@ -91,7 +96,7 @@ is added, and feed configuration/credentials are unchanged.
 
 ## Desktop cohort and consumer dependencies
 
-The driver requires **22 final desktop packages**, all at **12.1.5.1**.
+The driver requires **22 final desktop packages**, all at **12.1.5.2**.
 The inspected NextFramework and ScreenKeyboard graphs require **17** IDs:
 
 | Group | Packages |
@@ -118,8 +123,8 @@ and inspect the selected assets.
 Pass these properties to **restore and every build, test or publish**:
 
 ```text
-NextFramework:  -p:AvaloniaUpstreamVersion=12.1.5 -p:AvaloniaForkRevision=1
-ScreenKeyboard: -p:AvaloniaPackageVersion=12.1.5.1
+NextFramework:  -p:AvaloniaUpstreamVersion=12.1.5 -p:AvaloniaForkRevision=2
+ScreenKeyboard: -p:AvaloniaPackageVersion=12.1.5.2
 ```
 
 From the consumer root, using the intended project and approved configuration:

@@ -2,7 +2,7 @@
   "upstreamTag": "12.1.5",
   "upstreamCommit": "5825bf8c66fba0c11e67c980d8ece6444576bffa",
   "qualifiedCommit": "8f3564635b025908710dbe963e9f2e3ac7abf9b9",
-  "revision": 1,
+  "revision": 2,
   "repositoryUrl": "https://github.com/Soc-Coop-Bilanciai/Avalonia",
   "publishSource": "https://artifacts.coopbilanciai.it/nuget/v3/index.json"
 }

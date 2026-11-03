@@ -148,8 +148,9 @@ The overall report is `software-minimal-audit/REPORT.md`.
 The owned RAP session `41f85e6c-9ee1-493e-ac77-4ee78f5181ad` closed with no active
 jobs at **2026-11-02 22:34:01 UTC**; evidence:
 `software-minimal-audit/rap/rotate-final-cleanup-state.json`. Phase 1 ended
-without push, release or upload. The later 12.1.5.1 tag/packaging is a separate
-phase and does not prove feed availability or fresh consumer acceptance.
+without push, release or upload. The later 12.1.5.1 tag/packaging and 12.1.5.2
+documentation release are separate phases; their publication/consumer evidence
+belongs to the distribution guide, not these runtime measurements.
 
 Not qualified here: the full Controls suite, legacy/net8.0 TFMs, other operating
 systems, custom Skia leases, NativeAOT/trimming, the complete application graph

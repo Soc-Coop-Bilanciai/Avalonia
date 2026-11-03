@@ -82,7 +82,9 @@ rendering performance.
 | `f77959b2d5f6d656d727111651183461ae86ac76` | 006 | Preserve prepared designer dependencies during Clean; update NUKE parameter schema. |
 
 The immutable tag `bilanciai/12.1.5.1` points to `f77959b2d`. Later documentation
-does not change its package bytes or benchmark provenance. For the next stable,
+does not change its package bytes or benchmark provenance. Revision 12.1.5.2
+packages the documentation correction with unchanged qualified runtime inputs.
+For the next stable,
 replay selected runtime/tests, adapt packaging separately, and update these
 guides without replacing the new upstream README. Do not cherry-pick the entire
 historical fork. Keep exact release/package hashes in generated manifests.
