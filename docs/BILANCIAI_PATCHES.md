@@ -1,13 +1,17 @@
 # Bilanciai minimal software-renderer patch register
 
 Start with the complete [fork README](../readme.md); this index records every
-selected or retired patch and its dependencies. The final documentation-only
-commit covers the README, this index, the manifest and port guide.
+selected or retired patch and its dependencies. The qualified series
+includes the README, this index, the source manifest and port guide. The
+12.1.5.1 distribution adds the narrow packaging scope described below.
 
-This unreleased candidate starts at official Avalonia **12.1.5**,
+The qualified source for the planned **12.1.5.1** distribution starts at official
+Avalonia **12.1.5**,
 `5825bf8c66fba0c11e67c980d8ece6444576bffa`, and retains its **SkiaSharp 3.119.4**
 dependency baseline. Functional source: `6d20d22cad6dc3e5fc80be6ab26d1e265806fb76`,
-branch `bilanciai/software-minimal-12.1.5`. Local and target qualification is complete for the documented cases; historical Skia 4 measurements and
+qualified commit `8f3564635b025908710dbe963e9f2e3ac7abf9b9`; release branch
+`bilanciai/12.1.5`. Local and target qualification is complete for the documented
+cases; historical Skia 4 measurements and
 test counts do not qualify these different bytes.
 
 There is no experimental SHM backend, option, dispatcher or specific test.
@@ -27,12 +31,33 @@ retired entries and historical evidence when porting.
 | 003 | Retire | Full repaint, picture replay/copies and fixed eight-pixel halo did not establish general pixel parity. Historical heavy-scene throughput wins remain evidence, not a uniform efficiency gain. |
 | 004 | Retire from production | Inclusive nested elapsed diagnostics are not an optimization and omit work during disposal/target delivery. Keep measurement in the independent harness. |
 | 005 | Retire | No global ARM mask/tile/cache/FPS defaults or runtime renderer self-test. Frame-rate policy belongs to the application/upstream timer. |
-| 006 | Adapt to metadata only | This register, manifest and short port/build guide. No automatic historical replay, publication scripts or blanket consumer AOT/trimming restriction. |
+| 006 | Adapt metadata and 12.1.5.1 packaging | This register, manifests and guides; a narrow desktop selector/driver uses the official package patch/merge/reference-assembly pipeline. No automatic historical replay, publisher or blanket consumer AOT/trimming restriction. |
 | 007 | Adapt and split | Cache use/eviction lifetime remains with 001; failure to create a framebuffer context releases its lock independently. Retire tile guards and the shared timer cap. |
 | 008 | Adapt correctness only; retire upgrade | Retire Skia 4 versions and conditional path-builder migration. Keep only independent geometry-measurement invalidation, preserving official Skia 3 geometry construction and bounds safeguards. |
 | 009 | Carry; target microbenchmark qualified | Conservative TextBlock Measure/Arrange layout reuse reduces eligible construction/layout costs and allocations. Fallbacks and seven CPU-image parity cases pass; this is not a raster or frame-rate claim. |
 | 010 | Carry independently | Carousel ownership/reinsertion and stale-transition cancellation are correctness fixes absent from official 12.1.5. |
 | 011 | Retire entirely | Preserve historical SHM reports outside active source; do not relabel them as this candidate's results. |
+
+## 12.1.5.1 distribution scope
+
+The [distribution guide](BILANCIAI_DISTRIBUTION.md) documents the existing company
+feed, the 22-package desktop cohort and the 17 IDs required by the inspected
+NextFramework/ScreenKeyboard graphs. Publication and fresh consumer acceptance
+are not claimed by this register. `build/Bilanciai/Pack.ps1` creates final merged
+packages only; it is not a publisher.
+
+This packaging layer keeps the qualified runtime/dependencies unchanged, uses
+the official **Avalonia.Native 12.1.5** macOS binary with recorded hashes, and
+preserves designer assets built with the verified cached Bun. It overrides
+**PackageVersion** only: official assembly identities, including the intentional
+**DesignerSupport 0.7.0** freeze, remain unchanged. Final package provenance
+records the actual release commit; it does not relabel `6d20d22` benchmark bytes
+as a new runtime measurement.
+
+The selected patch series and qualification below remain the phase-1 evidence.
+Companion `audit`, `software-minimal-audit` and `deliverables` paths are local,
+non-normative artifacts outside the source repository, not NuGet runtime/build
+dependencies. This register and the README preserve their summary in source.
 
 ## Selected series
 
@@ -74,7 +99,7 @@ passed; 38 strict public-API comparisons passed without suppressions; 14
 retired-feature/consumer-policy checks passed**. Skia package/native dependency
 files match official 12.1.5. API scope is 17 common assemblies against official3
 and 21 desktop comparisons against the unchanged-platform-source migration
-reference. See the [local validation summary](../../audit/build-minimal3/validation-summary.json).
+reference. See the local validation summary (local companion path: `../../audit/build-minimal3/validation-summary.json`).
 
 Three additional cases pass **separately** from test-only commit `a3ecab8`,
 against the same production/native outputs from `6d20d22`: closed-hole stroke
@@ -82,7 +107,7 @@ parity in default/aliased modes and same-target failure/recovery. All 127
 production/native/support binary hashes remain unchanged. The original full
 suite remains **622 passed plus one skip at `6d20d22`**; it was not rerun for the test-only
 commit and these counts are not combined. See the
-[additional regression evidence](../../audit/additional-regression3/REPORT.md).
+additional regression evidence (local companion path: `../../audit/additional-regression3/REPORT.md`).
 
 The Skia 3 frame matrix completed **18/18 runs**, three alternating replicas
 per comparison. With identical loaded bytes/native Skia, geometry cache on/off
@@ -97,7 +122,7 @@ and do not support a text-workload gain. The optional complete Skia 4
 compatibility migration versus this Skia 3 candidate changed geometry frame
 rate **-30.633%**, CPU/frame **+33.358%** and p95 **+23.983%**; the text comparison
 is inconclusive. This includes managed/API/native migration, not isolated
-native-library attribution. See [raw comparisons and ranges](../../software-minimal-audit/results-frame/frame-analysis.json).
+native-library attribution. See raw comparisons and ranges (local companion path: `../../software-minimal-audit/results-frame/frame-analysis.json`).
 
 009 passed **12 fresh processes in three independent ABBA blocks**, five
 measured batches of 1,000 new controls per case. Eligible paired wall-time changes
@@ -109,10 +134,10 @@ and geometry hashes agree across the twelve processes; seven images were
 visually inspected with Latin/Hebrew glyphs and intended alignment present.
 This is construction, Measure and Arrange cost, not application FPS or physical
 scanout. Three descriptive blocks do not establish statistical significance.
-See the [ABBA results](../../software-minimal-audit/results-layout/LAYOUT_REPORT.md)
-and [separate CPU-image inspection](../../software-minimal-audit/results-layout/CPU-PNG-INSPECTION.md).
+See the ABBA results (local companion path: `../../software-minimal-audit/results-layout/LAYOUT_REPORT.md`)
+and separate CPU-image inspection (local companion path: `../../software-minimal-audit/results-layout/CPU-PNG-INSPECTION.md`).
 
-Eight real RAP captures pass raw/loaded-byte association and visual inspection. Official3/final3 have zero changed pixels in navigator, geometry and gradients across the captured viewport. Content origin is(32,32); right/bottom32 client pixels are offscreen. The corrected shadow supplement is absolute y92..112. Compat4 geometry differs by91,903pixels/max192 and is not pixel-equivalent. The owned RAP session closed at22:34UTC with no active jobs. See [visual evidence](../../software-minimal-audit/visual-diffs-v2/pixel-comparisons.json) and [raw join](../../software-minimal-audit/results-visual-qa/visual-raw-join.json).
+Eight real RAP captures pass raw/loaded-byte association and visual inspection. Official3/final3 have zero changed pixels in navigator, geometry and gradients across the captured viewport. Content origin is(32,32); right/bottom32 client pixels are offscreen. The corrected shadow supplement is absolute y92..112. Compat4 geometry differs by91,903pixels/max192 and is not pixel-equivalent. The owned RAP session closed at22:34UTC with no active jobs. See visual evidence (local companion path: `../../software-minimal-audit/visual-diffs-v2/pixel-comparisons.json`) and raw join (local companion path: `../../software-minimal-audit/results-visual-qa/visual-raw-join.json`).
 The seven layout CPU images are a separate gate. This register claims neither
 universal performance improvement nor qualification of every OS, legacy
 framework, custom Skia lease, NativeAOT or trimming.
@@ -126,10 +151,10 @@ runtime qualification remain separate; no NextFramework change is made here.
 The local cache also contains control 12.0.0.13 with Svg.Skia 5.1.1, declaring
 Skia minimum 3.119.2. That is a concrete candidate for later application
 requalification, not certified compatibility or a selected app change. See the
-[read-only dependency audit](../../audit/skia4-dependency-necessity.md).
+read-only dependency audit (local companion path: `../../audit/skia4-dependency-necessity.md`).
 
-The external [26+6 ledger](../../audit/commit-inventory.md) preserves exact
+The external 26+6 ledger (local companion path: `../../audit/commit-inventory.md`) preserves exact
 historical/replay hashes and file scopes. Original `acf6d55b`, frozen benchmark
 `b666e9b`, shadow fix `d8431f1` and Skia 4 reference `62493eb` remain preserved.
-Companion [reports and raw hashes](../../software-minimal-audit/REPORT.md) are evidence,
+Companion reports and raw hashes (local companion path: `../../software-minimal-audit/REPORT.md`) are evidence,
 not runtime/build dependencies. Their populations must remain distinct.

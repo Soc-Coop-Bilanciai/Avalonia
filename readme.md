@@ -2,15 +2,50 @@
 
 Fork locale basato su **Avalonia 12.1.5**, commit ufficiale
 `5825bf8c66fba0c11e67c980d8ece6444576bffa`, con **SkiaSharp 3.119.4** e
-**HarfBuzzSharp 8.3.1.3** ufficiali. Ramo: `bilanciai/software-minimal-12.1.5`.
-È un candidato qualificato sul perimetro descritto qui, non una release pubblicata.
+**HarfBuzzSharp 8.3.1.3** ufficiali. Ramo di rilascio: `bilanciai/12.1.5`;
+sorgente qualificato `8f3564635b025908710dbe963e9f2e3ac7abf9b9`, dal ramo
+`bilanciai/software-minimal-12.1.5`. La distribuzione NuGet **12.1.5.1** è in
+preparazione; questo documento non ne attesta ancora la pubblicazione.
 
-La serie contiene sei commit funzionali, un commit aggiuntivo solo test e un
-commit documentale. I binari effettivamente misurati provengono dal sorgente
+La serie qualificata contiene sei commit funzionali, un commit aggiuntivo solo
+test e un commit documentale. Il packaging aggiunto per 12.1.5.1 conserva quel
+runtime e non estende la qualifica. I binari effettivamente misurati provengono dal sorgente
 `6d20d22cad6dc3e5fc80be6ab26d1e265806fb76`; il commit test
 `a3ecab8dfb3bebd8814f95d4b11250bddbff25c2` e la documentazione non ne cambiano
 il runtime. SHA finale e patch esportate sono nel
-[manifest di consegna](../deliverables/software-minimal-12.1.5/series.json).
+manifest di consegna (percorso companion locale: `../deliverables/software-minimal-12.1.5/series.json`).
+
+## Usare i pacchetti 12.1.5.1
+
+La coorte desktop prevista contiene **22 pacchetti** a **12.1.5.1** sul feed
+aziendale esistente `https://artifacts.coopbilanciai.it/nuget/v3/index.json`;
+**17 ID** coprono i grafi NextFramework e ScreenKeyboard ispezionati.
+Verificare la pubblicazione sul feed prima del restore. La
+[guida di distribuzione](docs/BILANCIAI_DISTRIBUTION.md) contiene inventario,
+comando reale `build/Bilanciai/Pack.ps1`, cache/Bun, provenienza nativa e controlli
+sui pacchetti finali. Il driver crea i pacchetti con merge/reference assembly
+upstream e non esegue upload; non viene introdotto un publisher.
+
+Nei consumer correnti, mantenere le stesse proprietà in restore e build:
+
+```text
+NextFramework:  -p:AvaloniaUpstreamVersion=12.1.5 -p:AvaloniaForkRevision=1
+ScreenKeyboard: -p:AvaloniaPackageVersion=12.1.5.1
+```
+
+**Il grafo SVG attuale di NextFramework richiede Skia >=4.148.0 e HarfBuzz
+14.2.0.** Aggiornare solo Avalonia può quindi selezionare Skia 4. La coppia SVG
+12.0.0.13 / Svg.Skia 5.1.1 permette la baseline Skia 3, ma richiede una qualifica
+applicativa separata; non sopprimere downgrade NuGet per simulare compatibilità.
+La guida distingue disponibilità dei pacchetti, restore/build e qualifica runtime.
+Il rilascio imposta solo `PackageVersion`; preserva le identità assembly ufficiali,
+inclusa DesignerSupport 0.7.0, e non cambia policy AOT/trimming.
+
+Le evidenze di fase 1 indicate sotto sono percorsi locali companion non
+normativi esterni al repository (`audit`, `software-minimal-audit`,
+`deliverables`), non dipendenze del prodotto NuGet. Il README e il
+[registro patch](docs/BILANCIAI_PATCHES.md) ne conservano il riepilogo nel
+repository; la guida di distribuzione descrive il packaging corrente.
 
 ## Modifiche mantenute
 
@@ -32,7 +67,7 @@ Le funzionalità e API pubbliche ufficiali non vengono rimosse per eliminare gli
 
 L'indice completo [BILANCIAI_PATCHES.md](docs/BILANCIAI_PATCHES.md) contiene
 keep/adapt/retire, commit, dipendenze e prove per tutti gli ID. Il
-[registro dei 26 commit originali e sei follow-up](../audit/commit-inventory.md)
+registro dei 26 commit originali e sei follow-up (percorso companion locale: `../audit/commit-inventory.md`)
 comprende anche packaging, wrapper e documentazione storica.
 
 ## Ombra del navigator
@@ -47,7 +82,7 @@ Ripristinare l'immagine corretta ha un costo: nel vecchio fork seriale il
 navigator mostra −6,07% throughput e +15,16% CPU/frame rispetto alla maschera,
 mediane di tre rapporti appaiati. È una coorte storica distinta dal nuovo
 candidato. Nessuna modifica NextFramework nasconde il difetto del renderer.
-[Diagnosi, prima/dopo e raw](../software-minimal-audit/REPORT.md).
+Diagnosi, prima/dopo e raw (percorso companion locale: `../software-minimal-audit/REPORT.md`).
 
 ## Risultati su cb-next
 
@@ -90,11 +125,11 @@ viewport catturato: contenuto a (32,32), ultimi 32 pixel client destra/basso
 fuori schermo. ROI ombra corretta y92..112, zero differenze. La variante4 non è
 equivalente: 8 pixel/max1 sul pulsante navigator, 91.903/max192 nelle geometrie.
 
-[Report conclusivo](../software-minimal-audit/REPORT.md) ·
-[Frame/raw/ranges](../software-minimal-audit/results-frame/N3-METRICS.md) ·
-[ABBA](../software-minimal-audit/results-layout/LAYOUT_REPORT.md) ·
-[QA e immagini](../software-minimal-audit/visual-diffs-v2/VISUAL.md) ·
-[ispezione effettiva registrata](../software-minimal-audit/visual-diffs-v2/INSPECTION-software-analysis.md).
+Report conclusivo (percorso companion locale: `../software-minimal-audit/REPORT.md`) ·
+Frame/raw/ranges (percorso companion locale: `../software-minimal-audit/results-frame/N3-METRICS.md`) ·
+ABBA (percorso companion locale: `../software-minimal-audit/results-layout/LAYOUT_REPORT.md`) ·
+QA e immagini (percorso companion locale: `../software-minimal-audit/visual-diffs-v2/VISUAL.md`) ·
+ispezione effettiva registrata (percorso companion locale: `../software-minimal-audit/visual-diffs-v2/INSPECTION-software-analysis.md`).
 Le temperature registrate sono 58–63°C nelle nuove misure frame; frequenza,
 governor, throttling e inventario globale dei processi non sono raccolti.
 Non si escludono carichi esterni o throttling e non si generalizza a ogni scena.
@@ -124,7 +159,7 @@ La suite completa congelata a6d20 è **622 pass + uno skip preesistente**;
 Controls **141/141**, API strict **38/38** (17 contro official3 e21 contro baseline
 Desktop pulita Skia4), assenza/policy **14/14**, 21 asset Skia identici all'ufficiale3.
 Tre nuovi test passano separatamente sugli stessi binari; non si rinomina la
-suite precedente. Build zero warning/errori. [Log, XML e hash](../audit/build-minimal3/VALIDATION.md).
+suite precedente. Build zero warning/errori. Log, XML e hash (percorso companion locale: `../audit/build-minimal3/VALIDATION.md`).
 
 La cache è attiva per default nei casi qualificati. Per A/B, in un **nuovo processo**:
 
@@ -152,9 +187,10 @@ e le sue variabili di controllo non fanno parte del prodotto distribuito.
 
 Non qualificati: suite Controls completa, TFM legacy/net8, altre piattaforme,
 NativeAOT/trimming e intero grafo dell'app. Nessun nuovo divieto AOT è introdotto.
-I pacchetti pubblici upstream non contengono queste patch. Per eventuali pacchetti
-locali usare versione non pubblicata esplicita e una closure coerente delle
-dipendenze, come nella guida; questa consegna non aggiunge feed o publisher.
+I pacchetti pubblici upstream non contengono queste patch. La distribuzione
+12.1.5.1 usa una closure desktop coerente e il feed aziendale esistente, come
+descritto nella [guida di distribuzione](docs/BILANCIAI_DISTRIBUTION.md).
+Il driver di packaging non aggiunge feed, credenziali o un publisher.
 
 ## Porting e integrazione
 
@@ -173,12 +209,15 @@ l'integrazione. Lo stack SVG attuale NextFramework (`Svg.Controls.Skia.Avalonia`
 12.0.0.17 / Svg.Skia5.2.3) richiede Skia >=4.148.0. La cache contiene il candidato
 control12.0.0.13 / Svg.Skia5.1.1 con minimo3.119.2, ma la compatibilità dell'app
 non è certificata da questi test del renderer. Non forzare la risoluzione NuGet
-come sostituto dei test API/asset/pixel/lifetime. [Evidenze dipendenze](../audit/skia4-dependency-necessity.md).
+come sostituto dei test API/asset/pixel/lifetime. Evidenze dipendenze (percorso companion locale: `../audit/skia4-dependency-necessity.md`).
 
 Originale12.1.4 `acf6d55b`, port storico `b666e9b`, fix ombre `d8431f1`, vecchi
-117 benchmark e coorti successive rimangono preservati e distinti. Nessun push,
-release o upload. La sessione test cb-next è stata rilasciata alle22:34UTC; questa
-fase è conclusa. L'ulteriore audit Avalonia/SkiaSharp è coordinato separatamente.
+117 benchmark e coorti successive rimangono preservati e distinti. La fase 1
+si è conclusa senza push, release o upload. La sessione test cb-next è stata
+rilasciata alle22:34UTC. La preparazione della distribuzione 12.1.5.1 è una fase
+successiva: non rinomina le misure storiche né implica un'integrazione
+NextFramework già qualificata. L'ulteriore audit Avalonia/SkiaSharp è coordinato
+separatamente.
 
 ## Progetto upstream, attribuzioni e risorse
 
