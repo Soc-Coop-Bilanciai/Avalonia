@@ -12,6 +12,12 @@ using Nuke.Common.IO;
 
 public partial class Build
 {
+    [Parameter(Name = "bilanciai-desktop")]
+    public bool BilanciaiDesktop { get; set; }
+
+    [Parameter(Name = "bilanciai-bun-executable")]
+    public AbsolutePath? BilanciaiBunExecutable { get; set; }
+
     [Parameter(Name = "configuration")]
     public string? Configuration { get; set; }
 
@@ -84,7 +90,9 @@ public partial class Build
             MasterBranch = "refs/heads/master";
             ReleaseBranchRegex = new("^refs/heads/release/(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$");
             ReleaseConfiguration = "Release";
-            MSBuildSolution = RootDirectory / "dirs.proj";
+            MSBuildSolution = b.BilanciaiDesktop
+                ? RootDirectory / "build" / "Bilanciai" / "Desktop.proj"
+                : RootDirectory / "dirs.proj";
 
             // PARAMETERS
             IsLocalBuild = NukeBuild.IsLocalBuild;
@@ -145,6 +153,8 @@ public partial class Build
                 .Concat(RootDirectory.GlobDirectories("**/obj"))
                 .Where(dir => !((string)dir).Contains("nukebuild"))
                 .Concat(RootDirectory.GlobDirectories("**/node_modules"))
+                // The desktop release uses prepared designer dependencies; BunRunBuild still regenerates its assets.
+                .Where(dir => !b.BilanciaiDesktop || dir != RootDirectory / "src" / "Avalonia.DesignerSupport" / "Remote" / "HtmlTransport" / "webapp" / "node_modules")
                 .ToList();
             DirSuffix = Configuration;
             FileZipSuffix = Version + ".zip";

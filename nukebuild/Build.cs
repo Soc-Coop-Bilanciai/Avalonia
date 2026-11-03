@@ -95,6 +95,18 @@ partial class Build : NukeBuild
         c.AddProperty("PackageVersion", Parameters.Version)
             .SetConfiguration(Parameters.Configuration)
             .SetVerbosity(DotNetVerbosity.minimal);
+        if (BilanciaiDesktop)
+        {
+            using var distribution = System.Text.Json.JsonDocument.Parse(
+                File.ReadAllText(RootDirectory / "build" / "Bilanciai" / "distribution.json"));
+            c.AddProperty("IncludeAvaloniaDylib", "true")
+                .AddProperty("AvaloniaNativeDylibPath", RootDirectory / "build-intermediate" / "bilanciai-native" / "libAvaloniaNative.dylib")
+                .AddProperty("RepositoryUrl", distribution.RootElement.GetProperty("repositoryUrl").GetString())
+                .AddProperty("RepositoryCommit", Environment.GetEnvironmentVariable("BILANCIAI_SOURCE_COMMIT")
+                    ?? throw new InvalidOperationException("Use build/Bilanciai/Pack.ps1 to build this distribution."))
+                .AddProperty("BunCommand", $"%22{BilanciaiBunExecutable ?? throw new InvalidOperationException("Use the verified cached Bun executable from Pack.ps1.")}%22")
+                .AddProperty("BunInstallArguments", "install");
+        }
         if (Parameters.IsPackingToLocalCache)
             c
                 .AddProperty("ForcePackAvaloniaNative", "True")
@@ -139,6 +151,7 @@ partial class Build : NukeBuild
 
     // Ensure that Bun.Official.Tool is downloaded at least once on CI to work around https://github.com/dotnet/sdk/issues/51831
     Target InitDnx => _ => _
+        .OnlyWhenStatic(() => !BilanciaiDesktop)
         .Executes(() =>
         {
             var process = ProcessTasks.StartProcess(

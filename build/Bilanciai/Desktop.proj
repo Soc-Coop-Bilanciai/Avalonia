@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.Build.Traversal">
+  <ItemGroup>
+    <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj" />
+    <ProjectReference Include="../../src/**/*.csproj;../../packages/**/*.csproj"
+                      Exclude="../../src/Android/**;../../src/iOS/**;../../src/Browser/**;../../src/Windows/Avalonia.WinUI/**;../../src/Avalonia.SingleProject/**" />
+  </ItemGroup>
+</Project>
