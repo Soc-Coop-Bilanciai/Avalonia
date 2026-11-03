@@ -149,12 +149,15 @@ public partial class Build
             SbomRoot = ArtifactsDir / "sbom";
             ZipRoot = ArtifactsDir / "zip";
             TestResultsRoot = ArtifactsDir / "test-results";
+            var designerDependencies = RootDirectory / "src" / "Avalonia.DesignerSupport" / "Remote" / "HtmlTransport" / "webapp" / "node_modules";
             BuildDirs = RootDirectory.GlobDirectories("**/bin")
                 .Concat(RootDirectory.GlobDirectories("**/obj"))
                 .Where(dir => !((string)dir).Contains("nukebuild"))
                 .Concat(RootDirectory.GlobDirectories("**/node_modules"))
                 // The desktop release uses prepared designer dependencies; BunRunBuild still regenerates its assets.
-                .Where(dir => !b.BilanciaiDesktop || dir != RootDirectory / "src" / "Avalonia.DesignerSupport" / "Remote" / "HtmlTransport" / "webapp" / "node_modules")
+                .Where(dir => !b.BilanciaiDesktop ||
+                    (dir != designerDependencies && !((string)dir).StartsWith(
+                        (string)designerDependencies + System.IO.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
             DirSuffix = Configuration;
             FileZipSuffix = Version + ".zip";

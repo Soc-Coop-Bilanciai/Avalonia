@@ -120,6 +120,12 @@
   "allOf": [
     {
       "properties": {
+        "bilanciai-bun-executable": {
+          "type": "string"
+        },
+        "bilanciai-desktop": {
+          "type": "boolean"
+        },
         "configuration": {
           "type": "string"
         },
